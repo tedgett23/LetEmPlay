@@ -1,0 +1,15 @@
+{
+	"formats": [
+		"m4a",
+		"ogg"
+	],
+	"sounds": [
+		"pickup",
+		"place",
+		"return",
+		"clear",
+		"boardClear",
+		"deal",
+		"gameOver"
+	]
+}
