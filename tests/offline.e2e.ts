@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { routes, scoreFirstMove, visit } from './arcade';
+import { flickBasket, routes, scoreFirstMove, visit } from './arcade';
 
 // MVP.md §8.3 — after the first load, everything works with no network.
 test('works fully offline after first visit', async ({ page, context }) => {
@@ -21,4 +21,9 @@ test('works fully offline after first visit', async ({ page, context }) => {
 	await page.goto('/');
 	await page.getByRole('link', { name: /Block Drop/ }).click();
 	await scoreFirstMove(page);
+
+	await page.goto('/');
+	await page.getByRole('link', { name: /Hoop Flick/ }).click();
+	await page.getByRole('button', { name: 'Play', exact: true }).click();
+	await flickBasket(page);
 });

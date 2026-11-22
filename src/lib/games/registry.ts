@@ -27,8 +27,8 @@ export const games: GameEntry[] = [
 		title: 'Hoop Flick',
 		blurb: 'Flick to shoot hoops',
 		color: '#ff9f43',
-		status: 'coming-soon',
-		load: notYet
+		status: 'ready',
+		load: () => import('./hoop-flick').then((m) => m.default)
 	},
 	{
 		id: 'rail-dash',

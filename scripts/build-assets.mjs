@@ -111,5 +111,27 @@ function blockDrop() {
 	console.log('block-drop assets written');
 }
 
+// ---- Hoop Flick ----------------------------------------------------------------------------
+// Art is drawn in code (the Sports Pack's balls are 18 px, too small to scale up); sounds only.
+
+function hoopFlick() {
+	const out = join(OUT, 'hoop-flick');
+	buildSfx(join(out, 'sfx'), {
+		throw: 'impact-sounds/Audio/impactSoft_medium_001.ogg',
+		rim: 'impact-sounds/Audio/impactMetal_light_002.ogg',
+		board: 'impact-sounds/Audio/impactPlank_medium_000.ogg',
+		bounce: 'impact-sounds/Audio/impactSoft_heavy_001.ogg',
+		net: 'interface-sounds/Audio/scratch_002.ogg',
+		score: 'interface-sounds/Audio/confirmation_001.ogg',
+		swish: 'interface-sounds/Audio/confirmation_003.ogg',
+		fire: 'interface-sounds/Audio/maximize_006.ogg',
+		level: 'interface-sounds/Audio/maximize_008.ogg',
+		tick: 'interface-sounds/Audio/tick_002.ogg',
+		buzzer: 'interface-sounds/Audio/bong_001.ogg'
+	});
+	console.log('hoop-flick assets written');
+}
+
 extractAll();
 blockDrop();
+hoopFlick();

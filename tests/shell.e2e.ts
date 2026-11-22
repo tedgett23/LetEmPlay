@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { dragPiece, routes, scoreFirstMove, visit } from './arcade';
+import { dragPiece, flickBasket, routes, scoreFirstMove, visit } from './arcade';
 
 test('every route renders without outbound links or third-party traffic, including during play', async ({
 	page,
@@ -28,6 +28,13 @@ test('every route renders without outbound links or third-party traffic, includi
 			const until = Date.now() + 10_000;
 			await dragPiece(page, 0, 180, 790);
 			await dragPiece(page, 2, 540, 790);
+			// Deliberate observation window for delayed network activity (MVP §8.2).
+			await page.waitForTimeout(Math.max(0, until - Date.now()));
+		}
+		if (path === '/play/hoop-flick') {
+			await page.getByRole('button', { name: 'Play', exact: true }).click();
+			const until = Date.now() + 10_000;
+			await flickBasket(page);
 			// Deliberate observation window for delayed network activity (MVP §8.2).
 			await page.waitForTimeout(Math.max(0, until - Date.now()));
 		}

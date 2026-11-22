@@ -38,6 +38,10 @@ export default defineConfig({
 			}
 		})
 	],
+	// `pnpm preview` behind the Caddy reverse proxy. Vite rejects unknown Host headers.
+	preview: {
+		allowedHosts: ['gaming.edgett.tech']
+	},
 	test: {
 		expect: { requireAssertions: true },
 		projects: [

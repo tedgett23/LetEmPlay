@@ -1,0 +1,19 @@
+{
+	"formats": [
+		"m4a",
+		"ogg"
+	],
+	"sounds": [
+		"throw",
+		"rim",
+		"board",
+		"bounce",
+		"net",
+		"score",
+		"swish",
+		"fire",
+		"level",
+		"tick",
+		"buzzer"
+	]
+}
