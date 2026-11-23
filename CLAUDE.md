@@ -119,7 +119,7 @@ Use the Makefile targets in [`DEVELOPMENT.md`](DEVELOPMENT.md): `make unit` or `
 
 Kenney blocks automated downloads, so the user downloads packs manually. The zips go in
 `assets-src/kenney/` (never `static/`, because everything in `static/` ships and gets precached).
-`scripts/build-assets.mjs` extracts them, converts Kenney's XML spritesheets into PixiJS JSON, and
+`scripts/build-assets.mjs` extracts the packs, prepares the models and character sprites, and
 copies the chosen sounds. Kenney audio is `.ogg` only, which iOS can't play before 18.4. If `ffmpeg`
 is on PATH, the script also writes `.m4a`, and `loadSoundSet` picks the best format per device.
 Byte-identical sound sets share files through relative aliases in each game's `sfx/index.json`.

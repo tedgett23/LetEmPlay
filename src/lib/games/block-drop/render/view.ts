@@ -1,14 +1,8 @@
 // All Block Drop drawing and animation. The view never decides rules: index.ts feeds it
 // state and MoveResults from logic/, and it animates them.
-import {
-	Container,
-	Graphics,
-	Sprite,
-	Text,
-	type Spritesheet,
-	type Texture
-} from '../../../kit/pixi';
+import { Container, Graphics, Sprite, Text, type Texture } from '../../../kit/pixi';
 import type { PixiStage } from '../../../kit/pixi';
+import { tileArt, TILE_SIZE } from './textures';
 import { palette } from '../../../kit/theme';
 import { ease, Tweens } from '../../../kit/tween';
 import { canPlace, clearedCells, findClears, place, SIZE, type Board } from '../logic/board';
@@ -31,14 +25,7 @@ import {
 	type Pt
 } from './layout';
 
-const TILE_NAMES = [
-	'element_grey_square_glossy', // 0: used for the game-over fade
-	'element_red_square_glossy',
-	'element_yellow_square_glossy',
-	'element_green_square_glossy',
-	'element_blue_square_glossy'
-];
-const TILE_SCALE = (CELL - 4) / 64; // source tiles are 64px
+const TILE_SCALE = (CELL - 4) / TILE_SIZE;
 const MAX_PARTICLES = 120;
 
 interface Particle {
@@ -83,11 +70,9 @@ export class BlockDropView {
 
 	constructor(
 		private stage: PixiStage,
-		sheet: Spritesheet,
 		private reducedMotion: () => boolean
 	) {
-		this.tiles = TILE_NAMES.map((n) => sheet.textures[n]!);
-		this.star = sheet.textures['particleStar']!;
+		({ tiles: this.tiles, star: this.star } = tileArt(stage));
 		const root = stage.root;
 
 		// Background + board frame
@@ -211,7 +196,7 @@ export class BlockDropView {
 		for (const [dx, dy] of piece.cells) {
 			const s = new Sprite(this.tiles[color]);
 			s.anchor.set(0.5);
-			s.scale.set(((cell - 4) / 64) * 1);
+			s.scale.set((cell - 4) / TILE_SIZE);
 			const o = cellOffset(piece, dx, dy, cell);
 			s.position.set(o.x, o.y);
 			c.addChild(s);
@@ -523,5 +508,11 @@ export class BlockDropView {
 		this.ghost.removeChildren().forEach((c) => c.destroy());
 		this.highlight.clear();
 		this.shake = 0;
+	}
+
+	destroy() {
+		this.resetFx();
+		for (const tile of this.tiles) tile.destroy(true);
+		this.star.destroy(true);
 	}
 }

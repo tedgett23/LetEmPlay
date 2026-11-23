@@ -4,13 +4,12 @@ import { asset } from '$app/paths';
 import type { GameDefinition, GameInstance } from '../../kit/types';
 import { createLoop } from '../../kit/loop';
 import { attachGestures } from '../../kit/input';
-import { Assets, mountPixiStage, type Spritesheet } from '../../kit/pixi';
-import { sheetAndSounds } from '../../kit/pixi-assets';
+import { mountPixiStage } from '../../kit/pixi';
+import { loadSoundSet } from '../../kit/audio';
 import { applyMove, checkOver, isGameState, newGame, type GameState } from './logic/game';
 import { BlockDropView } from './render/view';
 import { H, inPause, slotAt, W } from './render/layout';
 
-const SHEET = asset('assets/block-drop/puzzle.json');
 const SFX = asset('assets/block-drop/sfx/index.json').replace(/\/index\.json$/, '');
 
 function randomSeed(): number {
@@ -22,7 +21,7 @@ const blockDrop: GameDefinition = {
 	logicalSize: { width: W, height: H },
 	orientation: 'portrait',
 
-	preload: sheetAndSounds(SHEET, SFX),
+	preload: ({ audio, signal }, progress) => loadSoundSet(audio, SFX, signal, progress),
 
 	create(ctx): GameInstance {
 		let view: BlockDropView | null = null;
@@ -114,8 +113,7 @@ const blockDrop: GameDefinition = {
 		}
 
 		const stage = mountPixiStage(ctx, this.logicalSize, (s) => {
-			const sheet = Assets.get<Spritesheet>(SHEET);
-			view = new BlockDropView(s, sheet, () => ctx.settings.reducedMotion);
+			view = new BlockDropView(s, () => ctx.settings.reducedMotion);
 			view.setBest(ctx.storage.get<number>('best', 0));
 			view.showBoard(state.board);
 			view.showTray(state.tray, state.board, false);
@@ -182,7 +180,7 @@ const blockDrop: GameDefinition = {
 			destroy() {
 				loop.stop();
 				detach?.();
-				view?.resetFx();
+				view?.destroy();
 				stage.destroy();
 				view = null;
 			}

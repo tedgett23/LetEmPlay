@@ -2,7 +2,6 @@
 // files the games load from static/assets/. Run: pnpm assets
 //
 // - Extracts each assets-src/kenney/*.zip (needs the `unzip` CLI) if not already extracted.
-// - Converts Kenney's XML spritesheet index into PixiJS spritesheet JSON.
 // - Copies the chosen sound effects. Kenney ships .ogg only; older iPhones (before iOS 18.4)
 //   can't decode Ogg, so if `ffmpeg` is on PATH we also write .m4a (AAC). The game picks the
 //   best format the device supports from sfx/index.json.
@@ -82,26 +81,6 @@ function salvageZip(file, dir) {
 }
 const LOCAL_HEADER = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
 
-/** Kenney <TextureAtlas> XML → PixiJS spritesheet JSON. */
-function kenneyXmlToPixi(xml, imageName) {
-	const frames = {};
-	for (const m of xml.matchAll(
-		/<SubTexture name="([^"]+)" x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)"\s*\/>/g
-	)) {
-		const [, name, x, y, w, h] = m;
-		const key = name.replace(/\.png$/, '');
-		const rect = { x: +x, y: +y, w: +w, h: +h };
-		frames[key] = {
-			frame: rect,
-			rotated: false,
-			trimmed: false,
-			spriteSourceSize: { x: 0, y: 0, w: rect.w, h: rect.h },
-			sourceSize: { w: rect.w, h: rect.h }
-		};
-	}
-	return { frames, meta: { image: imageName, format: 'RGBA8888', scale: '1' } };
-}
-
 function hasFfmpeg() {
 	try {
 		execFileSync('ffmpeg', ['-version'], { stdio: 'ignore' });
@@ -144,12 +123,6 @@ function buildSfx(outDir, sounds) {
 
 function blockDrop() {
 	const out = join(OUT, 'block-drop');
-	mkdirSync(out, { recursive: true });
-	const sheet = join(SRC, 'puzzle-pack-1/Spritesheet');
-	copyFileSync(join(sheet, 'spritesheet_double.png'), join(out, 'puzzle.png'));
-	const xml = readFileSync(join(sheet, 'spritesheet_double.xml'), 'utf8');
-	writeFileSync(join(out, 'puzzle.json'), JSON.stringify(kenneyXmlToPixi(xml, 'puzzle.png')));
-
 	// Sound names are what the game code plays; swap sources here to retune the feel.
 	buildSfx(join(out, 'sfx'), {
 		pickup: 'interface-sounds/Audio/select_001.ogg',
@@ -164,7 +137,7 @@ function blockDrop() {
 }
 
 // ---- Hoop Flick ----------------------------------------------------------------------------
-// Art is drawn in code (the Sports Pack's balls are 18 px, too small to scale up); sounds only.
+// Art is drawn in code; sounds only.
 
 function hoopFlick() {
 	const out = join(OUT, 'hoop-flick');

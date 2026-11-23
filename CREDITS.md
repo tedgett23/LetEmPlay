@@ -7,15 +7,13 @@ page shows as plain text.
 
 | Pack                              | Author | License | Downloaded | Used in                                              |
 | --------------------------------- | ------ | ------- | ---------- | ---------------------------------------------------- |
-| Puzzle Pack 1.1                   | Kenney | CC0 1.0 | 2026-11-22 | Block Drop                                           |
 | Interface Sounds 1.0              | Kenney | CC0 1.0 | 2026-11-22 | Block Drop, Hoop Flick, Rail Dash, Web Slinger, Goal |
 | Impact Sounds 1.0                 | Kenney | CC0 1.0 | 2026-11-22 | Hoop Flick, Rail Dash, Web Slinger, Goal             |
 | Train Kit                         | Kenney | CC0 1.0 | 2026-11-22 | Rail Dash                                            |
 | City Kit (Commercial) 2.1         | Kenney | CC0 1.0 | 2026-11-22 | Rail Dash                                            |
 | Animated Characters: Protagonists | Kenney | CC0 1.0 | 2026-11-22 | Rail Dash, Web Slinger, Goal                         |
 
-Sports Pack (Kenney, CC0 1.0, downloaded 2026-11-22) is in `assets-src/` but unused: its balls
-are 18 px, so Hoop Flick draws its ball, hoop and court in code.
+Block Drop draws its own tiles and stars; Hoop Flick draws its ball, hoop and court. Both use Kenney sound effects.
 
 Goal's players wear custom soccer uniforms on the shared animated character. Its courses, ball and obstacles are drawn in code.
 

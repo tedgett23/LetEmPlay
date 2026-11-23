@@ -7,7 +7,6 @@ export interface Credit {
 }
 
 export const credits: Credit[] = [
-	{ pack: 'Puzzle Pack', author: 'Kenney', license: 'CC0 1.0', usedIn: 'Block Drop' },
 	{
 		pack: 'Interface Sounds',
 		author: 'Kenney',
