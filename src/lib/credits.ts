@@ -12,7 +12,15 @@ export const credits: Credit[] = [
 		pack: 'Interface Sounds',
 		author: 'Kenney',
 		license: 'CC0 1.0',
-		usedIn: 'Block Drop, Hoop Flick'
+		usedIn: 'Block Drop, Hoop Flick, Rail Dash'
 	},
-	{ pack: 'Impact Sounds', author: 'Kenney', license: 'CC0 1.0', usedIn: 'Hoop Flick' }
+	{ pack: 'Impact Sounds', author: 'Kenney', license: 'CC0 1.0', usedIn: 'Hoop Flick, Rail Dash' },
+	{ pack: 'Train Kit', author: 'Kenney', license: 'CC0 1.0', usedIn: 'Rail Dash' },
+	{ pack: 'City Kit (Commercial)', author: 'Kenney', license: 'CC0 1.0', usedIn: 'Rail Dash' },
+	{
+		pack: 'Animated Characters: Protagonists',
+		author: 'Kenney',
+		license: 'CC0 1.0',
+		usedIn: 'Rail Dash'
+	}
 ];

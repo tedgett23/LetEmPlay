@@ -1,0 +1,17 @@
+{
+	"formats": [
+		"m4a",
+		"ogg"
+	],
+	"sounds": [
+		"coin",
+		"jump",
+		"land",
+		"slide",
+		"lane",
+		"stumble",
+		"crash",
+		"warn",
+		"tier"
+	]
+}

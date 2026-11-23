@@ -71,6 +71,11 @@ export interface GestureHandlers {
 
 export interface GestureOptions {
 	swipe?: SwipeOptions;
+	/**
+	 * Fire onSwipe as soon as the finger has travelled far enough, instead of on release.
+	 * Runners want this: the move starts mid-gesture. One swipe per touch; lift to swipe again.
+	 */
+	swipeOnMove?: boolean;
 	/** Vertical offset (CSS px, negative = up) applied to drag positions. */
 	dragOffsetY?: number;
 }
@@ -85,6 +90,9 @@ export function attachGestures(
 	const offsetY = opts.dragOffsetY ?? 0;
 	let active: number | null = null;
 	let samples: Sample[] = [];
+	/** Index into samples where the current (not yet fired) swipe started. */
+	let swipeFrom = 0;
+	let swiped = false;
 
 	const down = (e: PointerEvent) => {
 		if (active !== null) return;
@@ -92,14 +100,30 @@ export function attachGestures(
 		el.setPointerCapture?.(e.pointerId);
 		const p = local(el, e);
 		samples = [{ ...p, t: e.timeStamp }];
+		swipeFrom = 0;
+		swiped = false;
 		h.onDragStart?.({ x: p.x, y: p.y + offsetY });
 	};
 	const move = (e: PointerEvent) => {
 		if (e.pointerId !== active) return;
 		const p = local(el, e);
 		samples.push({ ...p, t: e.timeStamp });
-		if (samples.length > 32) samples.shift();
+		if (samples.length > 32) {
+			samples.shift();
+			swipeFrom = Math.max(0, swipeFrom - 1);
+		}
 		h.onDragMove?.({ x: p.x, y: p.y + offsetY });
+		if (opts.swipeOnMove && !swiped) {
+			const from = samples[swipeFrom]!;
+			const dir = classifySwipe(p.x - from.x, p.y - from.y, e.timeStamp - from.t, swipeOpts);
+			if (dir) {
+				swiped = true;
+				h.onSwipe?.(dir);
+			} else if (e.timeStamp - from.t > swipeOpts.maxDurationMs) {
+				// Too slow to be a swipe: start measuring again from the latest point.
+				swipeFrom = samples.length - 1;
+			}
+		}
 	};
 	const up = (e: PointerEvent) => {
 		if (e.pointerId !== active) return;
@@ -112,7 +136,9 @@ export function attachGestures(
 		const duration = e.timeStamp - first.t;
 		h.onDragEnd?.({ x: p.x, y: p.y + offsetY });
 		const dir = classifySwipe(dx, dy, duration, swipeOpts);
-		if (dir) {
+		if (swiped) {
+			// Already handled during the move.
+		} else if (dir) {
 			h.onSwipe?.(dir);
 			h.onFlick?.({ start: first, end: p, ...flickVelocity(samples) });
 		} else if (Math.hypot(dx, dy) < 10) {

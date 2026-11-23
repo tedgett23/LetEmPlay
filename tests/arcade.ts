@@ -17,7 +17,8 @@ export const routes = [
 	['/parents', 'For parents'],
 	['/credits', 'Credits'],
 	['/play/block-drop', 'Block Drop'],
-	['/play/hoop-flick', 'Hoop Flick']
+	['/play/hoop-flick', 'Hoop Flick'],
+	['/play/rail-dash', 'Rail Dash']
 ] as const;
 
 export async function visit(page: Page, path: string, heading: string) {
@@ -93,66 +94,85 @@ async function cdpFlick(page: Page, speed: number) {
 }
 
 /**
- * Flick the ball until a basket scores. On WebKit, Playwright can't fix the time between mouse
- * moves, so each attempt measures the speed the page actually saw (the game's own
- * trailing-window rule) and scales the next flick toward a perfect one.
+ * WebKit has no DevTools input API, so dispatch the pointer sequence inside the page, waiting
+ * between events on the page's own clock so the game measures an exact speed. Uses the mouse
+ * pointer id, which is always active, so the game's pointer capture accepts it.
  */
-export async function flickBasket(page: Page, maxAttempts = 6) {
+async function pageFlick(page: Page, speed: number) {
+	const point = await toPage(page);
+	const start = point(BALL_IN_HAND.x, BALL_IN_HAND.y);
+	const scale = point(1, 0).x - point(0, 0).x;
+	await page.evaluate(
+		({ x, y, perMs }) => {
+			const target = document.elementFromPoint(x, y)!;
+			const fire = (type: string, cy: number) =>
+				target.dispatchEvent(
+					new PointerEvent(type, {
+						bubbles: true,
+						cancelable: true,
+						pointerId: 1,
+						pointerType: 'mouse',
+						isPrimary: true,
+						clientX: x,
+						clientY: cy,
+						buttons: type === 'pointerup' ? 0 : 1
+					})
+				);
+			const wait = (ms: number) => {
+				const until = performance.now() + ms;
+				while (performance.now() < until) {
+					/* hold the main thread so the gap is exact */
+				}
+			};
+			fire('pointerdown', y);
+			for (let i = 1; i <= 8; i++) {
+				wait(16);
+				fire('pointermove', y - perMs * 16 * i);
+			}
+			fire('pointerup', y - perMs * 16 * 8);
+		},
+		{ x: start.x, y: start.y, perMs: speed * scale }
+	);
+}
+
+/** One perfect flick from the ball in hand; it must score. */
+export async function flickBasket(page: Page) {
 	const host = page.locator('.host');
 	await expect(host).toHaveAttribute('data-phase', 'playing');
-	const before = Number(await host.getAttribute('data-score'));
-	const scored = async () => {
-		try {
-			await expect(host).not.toHaveAttribute('data-score', String(before), { timeout: 2500 });
-			return true;
-		} catch {
-			return false;
-		}
-	};
-
+	const before = await host.getAttribute('data-score');
 	if (page.context().browser()?.browserType().name() === 'chromium') {
 		await cdpFlick(page, PERFECT_FLICK);
-		if (await scored()) return;
-		throw new Error('a perfect flick missed');
+	} else {
+		await pageFlick(page, PERFECT_FLICK);
 	}
+	await expect(host).not.toHaveAttribute('data-score', before!, { timeout: 5000 });
+}
 
-	await page.evaluate(() => {
-		const w = window as unknown as {
-			__flick?: { t: number; y: number }[];
-			__flickHooked?: boolean;
+// ---- Rail Dash -------------------------------------------------------------------------------
+
+/** Swipe across the middle of the stage. */
+export async function swipe(page: Page, dir: 'left' | 'right' | 'up' | 'down') {
+	const box = (await page.locator('.stage').boundingBox())!;
+	const x = box.x + box.width / 2;
+	const y = box.y + box.height * 0.6;
+	const d = 90;
+	const [dx, dy] = { left: [-d, 0], right: [d, 0], up: [0, -d], down: [0, d] }[dir];
+	await page.mouse.move(x, y);
+	await page.mouse.down();
+	await page.mouse.move(x + dx! / 2, y + dy! / 2);
+	await page.mouse.move(x + dx!, y + dy!);
+	await page.mouse.up();
+}
+
+/** Make Math.random repeatable in the page, so a run's generated track is the same every time. */
+export async function seedRandom(page: Page, seed = 1) {
+	await page.addInitScript((s) => {
+		let t = s >>> 0;
+		Math.random = () => {
+			t = (t + 0x6d2b79f5) >>> 0;
+			let r = Math.imul(t ^ (t >>> 15), t | 1);
+			r ^= r + Math.imul(r ^ (r >>> 7), r | 61);
+			return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
 		};
-		if (w.__flickHooked) return;
-		w.__flickHooked = true;
-		w.__flick = [];
-		const rec = (e: PointerEvent) => w.__flick!.push({ t: e.timeStamp, y: e.clientY });
-		window.addEventListener('pointerdown', (e) => ((w.__flick = []), rec(e)), { capture: true });
-		window.addEventListener('pointermove', rec, { capture: true });
-		window.addEventListener('pointerup', rec, { capture: true });
-	});
-	const point = await toPage(page);
-	const scale = point(1, 0).x - point(0, 0).x; // CSS px per logical px
-	let perMove = 20; // logical px per mouse move; adjusted after each attempt
-
-	for (let attempt = 0; attempt < maxAttempts; attempt++) {
-		const start = point(BALL_IN_HAND.x, BALL_IN_HAND.y);
-		await page.mouse.move(start.x, start.y);
-		await page.mouse.down();
-		for (let i = 1; i <= 8; i++) await page.mouse.move(start.x, start.y - perMove * scale * i);
-		await page.mouse.up();
-
-		const seen = await page.evaluate(() => {
-			const s = (window as unknown as { __flick: { t: number; y: number }[] }).__flick;
-			const last = s[s.length - 1]!;
-			let first = s[0]!;
-			for (let i = s.length - 2; i >= 0; i--) {
-				first = s[i]!;
-				if (last.t - first.t >= 80) break;
-			}
-			return (first.y - last.y) / Math.max(last.t - first.t, 1);
-		});
-		const logicalSpeed = seen / scale;
-		perMove *= Math.min(Math.max(PERFECT_FLICK / Math.max(logicalSpeed, 0.1), 0.4), 2.5);
-		if (await scored()) return;
-	}
-	throw new Error('no basket after several flicks');
+	}, seed);
 }

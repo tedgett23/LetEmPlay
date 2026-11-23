@@ -11,8 +11,6 @@ export interface GameEntry {
 	load: () => Promise<GameDefinition>;
 }
 
-const notYet = () => Promise.reject(new Error('Game not built yet'));
-
 export const games: GameEntry[] = [
 	{
 		id: 'block-drop',
@@ -35,8 +33,8 @@ export const games: GameEntry[] = [
 		title: 'Rail Dash',
 		blurb: 'Dash, jump and dodge',
 		color: '#4cc9f0',
-		status: 'coming-soon',
-		load: notYet
+		status: 'ready',
+		load: () => import('./rail-dash').then((m) => m.default)
 	}
 ];
 
