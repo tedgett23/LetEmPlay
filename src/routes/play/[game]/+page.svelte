@@ -1,5 +1,5 @@
 <script lang="ts">
-	// Hosts one game (MVP.md §6, §11). The shell owns overlays, lifecycle and navigation;
+	// Hosts one game. The shell owns overlays, lifecycle and navigation;
 	// the game owns its canvas inside `container`.
 	import { onMount } from 'svelte';
 	import { beforeNavigate, goto } from '$app/navigation';
@@ -56,7 +56,7 @@
 		void goto(resolve('/'));
 	}
 
-	// Back gesture / browser back pauses instead of leaving mid-run (MVP.md §11).
+	// Back gesture / browser back pauses instead of leaving mid-run.
 	beforeNavigate((nav) => {
 		if (!leaving && phase === 'playing') {
 			nav.cancel();

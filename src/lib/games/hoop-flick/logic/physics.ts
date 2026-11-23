@@ -1,7 +1,7 @@
 // One ball's flight: gravity, the rim (a ring), the backboard, the floor, and basket detection.
 // Real 3D positions with a perspective camera do the "fake depth" for us: a rising ball is in
 // front of the hoop, so it passes in front of the rim. Rim collisions are also gated until the
-// ball starts falling (MVP.md §10.2), so a low, fast shot never clips the front of the rim.
+// ball starts falling, so a low, fast shot never clips the front of the rim.
 import type { Velocity3 } from './aim';
 import { TUNING } from './tuning';
 

@@ -1,4 +1,4 @@
-// Hoop Flick (MVP.md §10.2): flick the ball up into the hoop, as many as you can in 60 seconds.
+// Hoop Flick: flick the ball up into the hoop, as many as you can in 60 seconds.
 // This file wires the pure rules (logic/) to the view (render/) and the shell contract.
 import { asset } from '$app/paths';
 import type { GameDefinition, GameInstance } from '../../kit/types';
@@ -144,7 +144,7 @@ const hoopFlick: GameDefinition = {
 			v.render();
 
 			// Flick velocities arrive in CSS px/ms; convert to logical px/ms so the same flick on
-			// the screen's scale feels the same on a phone and a tablet (MVP.md §10.2).
+			// the screen's scale feels the same on a phone and a tablet.
 			const perCss = () => s.toLogical({ x: 1, y: 0 }).x - s.toLogical({ x: 0, y: 0 }).x;
 
 			detach = attachGestures(

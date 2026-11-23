@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// MVP.md §13: mobile emulation only (phones + tablets, touch).
+// Mobile emulation only (phones + tablets, touch).
 export default defineConfig({
 	webServer: { command: 'pnpm build && pnpm preview --port 4174 --strictPort', port: 4174 },
 	workers: 2,

@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-// MVP.md §7: precache everything on install, serve cache-first, never hit a third-party origin.
+// Precache everything on install, serve cache-first, never hit a third-party origin.
 import { self } from '$app/service-worker';
 import { immutable, assets, prerendered } from '$app/manifest';
 import { version } from '$app/env';
@@ -9,7 +9,9 @@ const CACHE = `arcade-${version}`;
 // Everything the app needs, so all games work fully offline after the first visit.
 const PRECACHE = [
 	...immutable.map((f) => f.path),
-	...assets.map((f) => f.path),
+	// iOS launch screens are only fetched when the app is added to the home screen; caching
+	// all 17 device sizes on every device would waste space.
+	...assets.map((f) => f.path).filter((p) => !p.includes('/splash/')),
 	...prerendered.map((f) => f.path)
 ].map((p) => new URL(p, self.registration.scope).pathname);
 
@@ -18,7 +20,7 @@ const PRECACHE_SET = new Set(PRECACHE);
 self.addEventListener('install', (event) => {
 	event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)));
 	// No skipWaiting(): the new version takes over on the next cold launch so play is never
-	// interrupted (MVP.md §7, "Updates").
+	// interrupted.
 });
 
 self.addEventListener('activate', (event) => {

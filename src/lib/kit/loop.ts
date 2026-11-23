@@ -1,4 +1,4 @@
-// Fixed-timestep loop (MVP.md §6). update() runs at a fixed rate; render() gets an
+// Fixed-timestep loop. update() runs at a fixed rate; render() gets an
 // interpolation alpha. Large deltas (e.g. returning from background) are clamped.
 export interface LoopCallbacks {
 	update(dt: number): void;

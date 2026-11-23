@@ -1,4 +1,4 @@
-// Block Drop (MVP.md §10.1): place pieces on an 8×8 board, clear full rows and columns.
+// Block Drop: place pieces on an 8×8 board, clear full rows and columns.
 // This file wires the pure rules (logic/) to the view (render/) and the shell contract.
 import { asset } from '$app/paths';
 import type { GameDefinition, GameInstance } from '../../kit/types';

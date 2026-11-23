@@ -1,4 +1,4 @@
-// Passability checker (MVP.md §10.3): can a player get through this pattern from any lane at
+// Passability checker: can a player get through this pattern from any lane at
 // this speed? Trains are walls. Bars and gantries never block on their own (you can always
 // slide under them, and you can change lanes while sliding), so the question is whether some
 // sequence of lane changes threads between the trains, given how long a lane change takes.

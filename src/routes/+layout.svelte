@@ -8,7 +8,7 @@
 
 	onMount(() => {
 		loadSettings();
-		// Kid-proofing: no long-press menus, no pinch zoom (MVP.md §6).
+		// Kid-proofing: no long-press menus, no pinch zoom.
 		const block = (e: Event) => e.preventDefault();
 		document.addEventListener('contextmenu', block);
 		document.addEventListener('gesturestart', block);

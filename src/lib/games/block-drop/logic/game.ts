@@ -1,5 +1,5 @@
 // Whole-game state machine for Block Drop. Pure and serializable, so the renderer stays
-// dumb and a saved run can be restored exactly (MVP.md §10.1 "Persistence").
+// dumb and a saved run can be restored exactly.
 import {
 	anyMoveAvailable,
 	applyClears,

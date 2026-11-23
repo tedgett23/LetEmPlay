@@ -1,4 +1,4 @@
-// Pointer-Events-only gesture helpers (MVP.md §6). Touch is the target; mouse works incidentally.
+// Pointer-Events-only gesture helpers. Touch is the target; mouse works incidentally.
 // Classification is pure and unit-tested; attach* functions wire it to DOM events.
 
 export type SwipeDir = 'left' | 'right' | 'up' | 'down';

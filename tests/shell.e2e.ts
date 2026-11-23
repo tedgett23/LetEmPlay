@@ -6,7 +6,7 @@ test('every route renders without outbound links or third-party traffic, includi
 	context,
 	baseURL
 }) => {
-	// Ten seconds of observed play per game, by design (MVP §8.2), plus every route.
+	// Ten seconds of observed play per game, by design, plus every route.
 	test.slow();
 	const origin = new URL(baseURL!).origin;
 	const foreign: string[] = [];
@@ -30,7 +30,7 @@ test('every route renders without outbound links or third-party traffic, includi
 			const until = Date.now() + 10_000;
 			await dragPiece(page, 0, 180, 790);
 			await dragPiece(page, 2, 540, 790);
-			// Deliberate observation window for delayed network activity (MVP §8.2).
+			// Deliberate observation window for delayed network activity.
 			await page.waitForTimeout(Math.max(0, until - Date.now()));
 		}
 		if (path === '/play/rail-dash') {
@@ -39,14 +39,14 @@ test('every route renders without outbound links or third-party traffic, includi
 			await swipe(page, 'left');
 			await swipe(page, 'up');
 			await expect(page.locator('.host')).toHaveAttribute('data-score', /^[1-9]\d*$/);
-			// Deliberate observation window for delayed network activity (MVP §8.2).
+			// Deliberate observation window for delayed network activity.
 			await page.waitForTimeout(Math.max(0, until - Date.now()));
 		}
 		if (path === '/play/hoop-flick') {
 			await page.getByRole('button', { name: 'Play', exact: true }).click();
 			const until = Date.now() + 10_000;
 			await flickBasket(page);
-			// Deliberate observation window for delayed network activity (MVP §8.2).
+			// Deliberate observation window for delayed network activity.
 			await page.waitForTimeout(Math.max(0, until - Date.now()));
 		}
 	}

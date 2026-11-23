@@ -1,4 +1,4 @@
-// Global settings (MVP.md §11). Reactive via Svelte runes, persisted locally.
+// Global settings. Reactive via Svelte runes, persisted locally.
 import { createStorage } from './storage';
 
 export interface GlobalSettings {

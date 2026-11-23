@@ -1,4 +1,4 @@
-// Rail Dash 3D view (MVP.md §10.3). Trains, track and the runner are Kenney models (see
+// Rail Dash 3D view. Trains, track and the runner are Kenney models (see
 // models.ts), as are the City Kit shops; bars, gantries and coins are simple shapes built here. Everything that
 // comes and goes is pooled, the track is recycled in chunks, and the view never decides rules:
 // it reads RunState every frame.
@@ -512,7 +512,7 @@ export class RailDashView {
 		obj.rotation.y = this.time * 4 + c.id;
 	}
 
-	/** Drop to 1.5× resolution if frames are consistently slower than 20 ms (MVP.md §10.3). */
+	/** Drop to 1.5× resolution if frames are consistently slower than 20 ms. */
 	private autoResolution() {
 		const now = performance.now();
 		const frame = now - this.lastFrame;

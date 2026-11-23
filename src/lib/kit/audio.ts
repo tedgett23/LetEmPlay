@@ -1,5 +1,5 @@
-// Web Audio wrapper (MVP.md §6): unlock on first touch, SFX + music buses that honor
-// settings, suspend when hidden. All audio files are same-origin (MVP.md §2.1).
+// Web Audio wrapper: unlock on first touch, SFX + music buses that honor
+// settings, suspend when hidden. All audio files are same-origin.
 import type { GlobalSettings } from './settings.svelte';
 
 export interface AudioService {

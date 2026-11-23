@@ -1,4 +1,4 @@
-// Letterbox scaling of a logical (design) resolution into a container (MVP.md §6).
+// Letterbox scaling of a logical (design) resolution into a container.
 export interface Size {
 	width: number;
 	height: number;

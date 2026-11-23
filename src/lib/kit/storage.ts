@@ -1,4 +1,4 @@
-// MVP.md §6 — namespaced, versioned, failure-safe local storage. Nothing ever leaves the device.
+// Namespaced, versioned, failure-safe local storage. Nothing ever leaves the device.
 const ROOT = 'arcade:v1';
 const SCHEMA = 1;
 

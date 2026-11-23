@@ -1,4 +1,4 @@
-// The piece set (MVP.md §10.1). No rotation: every orientation is its own piece.
+// The piece set. No rotation: every orientation is its own piece.
 // Shapes are drawn as ASCII so they're easy to review.
 
 export interface Piece {

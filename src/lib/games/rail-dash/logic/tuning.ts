@@ -1,4 +1,4 @@
-// Every Rail Dash feel constant in one place (MVP.md §10.3). Units are metres and seconds.
+// Every Rail Dash feel constant in one place. Units are metres and seconds.
 // The player runs along +z; lanes are at x = -LANE_W, 0, +LANE_W.
 
 export const TUNING = {
@@ -24,7 +24,7 @@ export const TUNING = {
 		slideSeconds: 0.62,
 		/** A swipe down mid-air drops you this fast (m/s) and then slides. */
 		dropSpeed: 18,
-		/** Accept the next swipe this long before the current move finishes (MVP.md §10.3). */
+		/** Accept the next swipe this long before the current move finishes. */
 		bufferSeconds: 0.15,
 		/** After a side bump: slowed down and can't stumble again for this long. */
 		stumbleSeconds: 0.8,

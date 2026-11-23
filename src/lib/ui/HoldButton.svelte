@@ -1,5 +1,5 @@
 <script lang="ts">
-	// Press-and-hold confirm for destructive actions (MVP.md §2.7). A tap does nothing.
+	// Press-and-hold confirm for destructive actions. A tap does nothing.
 	let {
 		label,
 		holdMs = 2000,

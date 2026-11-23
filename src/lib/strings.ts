@@ -1,4 +1,4 @@
-// All user-facing strings live here so we can localize later (MVP.md §3).
+// All user-facing strings live here so we can localize later.
 export const t = {
 	appName: 'Arcade',
 	tagline: 'Free games. No ads. No pop-ups.',

@@ -1,4 +1,4 @@
-// Hand-authored obstacle patterns (MVP.md §10.3). Each pattern is drawn as the player sees it:
+// Hand-authored obstacle patterns. Each pattern is drawn as the player sees it:
 // three columns (left, centre, right lanes), FAR rows at the top, NEAR rows at the bottom.
 // Each row is TUNING.world.rowLength metres long.
 //

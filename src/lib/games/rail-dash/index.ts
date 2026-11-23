@@ -1,4 +1,4 @@
-// Rail Dash (MVP.md §10.3): a three-lane endless runner. Swipe left/right to switch lanes, up to
+// Rail Dash: a three-lane endless runner. Swipe left/right to switch lanes, up to
 // jump, down to slide. This file wires the pure rules (logic/) to the 3D view and HUD (render/).
 import { asset } from '$app/paths';
 import type { GameDefinition, GameInstance } from '../../kit/types';

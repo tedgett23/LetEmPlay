@@ -1,4 +1,4 @@
-// Every Hoop Flick feel constant in one place (MVP.md §10.2). World units are roughly metres:
+// Every Hoop Flick feel constant in one place. World units are roughly metres:
 // x is sideways (0 = centre), y is height above the floor, z is depth away from the player.
 // Feel matters more than realism: the rim is wider than a real one and the aim assist is generous.
 

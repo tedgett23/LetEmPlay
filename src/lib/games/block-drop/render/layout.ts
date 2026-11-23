@@ -17,7 +17,7 @@ export const TRAY_CELL = 44;
 
 export const PAUSE = { x: 600, y: 40, size: 96 };
 
-/** How far above the finger a dragged piece floats, in cells (MVP.md §10.1). */
+/** How far above the finger a dragged piece floats, in cells. */
 export const LIFT_CELLS = 1.5;
 
 export interface Pt {

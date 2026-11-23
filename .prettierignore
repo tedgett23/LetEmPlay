@@ -8,5 +8,5 @@ bun.lockb
 # Miscellaneous
 /static/
 
-# Third-party asset sources (MVP.md §9)
+# Third-party asset sources
 /assets-src/

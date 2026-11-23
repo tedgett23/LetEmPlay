@@ -1,4 +1,4 @@
-// Loads Rail Dash's Kenney models once per session (MVP.md §9). The parsed scenes are kept in
+// Loads Rail Dash's Kenney models once per session. The parsed scenes are kept in
 // memory between visits (a few MB, constant), so returning to the game doesn't re-download or
 // re-parse; GPU copies belong to each renderer and are freed with it.
 import { asset } from '$app/paths';

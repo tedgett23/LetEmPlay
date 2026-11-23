@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { resolve } from '$app/paths';
+	import { asset, resolve } from '$app/paths';
 	import { games } from '#lib/games/registry.ts';
 	import { getBest } from '#lib/kit/scores.ts';
 	import { t } from '#lib/strings.ts';
@@ -30,9 +30,12 @@
 			<li>
 				{#if g.status === 'ready'}
 					<a class="card" href={resolve('/play/[game]', { game: g.id })} style:--card={g.color}>
-						<span class="title">{g.title}</span>
-						<span class="blurb">{g.blurb}</span>
-						{#if bests[g.id]}<span class="best">{t.best}: {bests[g.id]}</span>{/if}
+						<img class="shot" src={asset(`thumbs/${g.id}.jpg`)} alt="" width="600" height="600" />
+						<span class="label">
+							<span class="title">{g.title}</span>
+							<span class="blurb">{g.blurb}</span>
+							{#if bests[g.id]}<span class="best">{t.best}: {bests[g.id]}</span>{/if}
+						</span>
 					</a>
 				{:else}
 					<div class="card soon" style:--card={g.color} aria-disabled="true">
@@ -75,18 +78,16 @@
 		margin: 0;
 		padding: 0;
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 		gap: 14px;
 	}
 	.card {
 		display: flex;
 		flex-direction: column;
-		justify-content: flex-end;
-		gap: 4px;
-		aspect-ratio: 1;
-		padding: 16px;
+		height: 100%;
 		border-radius: 26px;
-		background: linear-gradient(160deg, var(--card), color-mix(in srgb, var(--card) 60%, black));
+		overflow: hidden;
+		background: var(--card);
 		color: #1a1433;
 		text-decoration: none;
 		box-shadow: 0 6px 0 color-mix(in srgb, var(--card) 50%, black);
@@ -94,6 +95,23 @@
 	}
 	.card:active {
 		transform: translateY(3px);
+	}
+	/* A real screenshot of the game, so kids can tell them apart before reading. */
+	.shot {
+		display: block;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 1;
+		object-fit: cover;
+		background: color-mix(in srgb, var(--card) 70%, black);
+	}
+	.label {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		flex: 1;
+		padding: 10px 14px 14px;
+		background: linear-gradient(160deg, var(--card), color-mix(in srgb, var(--card) 75%, black));
 	}
 	.title {
 		font-size: 22px;

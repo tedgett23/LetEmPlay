@@ -1,6 +1,6 @@
 // The ONLY place games should import PixiJS from.
 // 'pixi.js/unsafe-eval' swaps Pixi's runtime code generation for CSP-safe versions, so we
-// never need 'unsafe-eval' in the CSP (MVP.md §8). Import order matters: it must come first.
+// never need 'unsafe-eval' in the CSP. Import order matters: it must come first.
 import 'pixi.js/unsafe-eval';
 import { Application, Container } from 'pixi.js';
 import { devicePixelRatioCapped, fitLogical, observeSize, type Size } from './viewport';

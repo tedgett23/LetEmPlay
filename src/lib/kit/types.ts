@@ -1,4 +1,4 @@
-// MVP.md §6 — the contract every game implements. The shell owns everything outside the
+// The contract every game implements. The shell owns everything outside the
 // game's container; the game owns its canvas.
 import type { AudioService } from './audio';
 import type { GameStorage } from './storage';

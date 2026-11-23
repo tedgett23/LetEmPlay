@@ -1,4 +1,4 @@
-// Hoop Flick arcade round (MVP.md §10.2): 60 seconds, swish = 3, rim-in = 2. Every 5 baskets the
+// Hoop Flick arcade round: 60 seconds, swish = 3, rim-in = 2. Every 5 baskets the
 // hoop swings further and faster. Three swishes in a row puts you "on fire" (double points) until
 // a miss. Pure state + step(); the view only reads it and plays the events.
 import { aimFlick, type Aim } from './aim';

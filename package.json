@@ -19,7 +19,8 @@
 		"test": "pnpm test:unit --run && pnpm test:e2e",
 		"test:e2e": "playwright test",
 		"test:e2e:install": "playwright install --with-deps chromium webkit",
-		"icons": "node scripts/gen-placeholder-icons.mjs",
+		"art": "node scripts/capture-art.mjs",
+		"release-check": "node scripts/release-check.mjs",
 		"assets": "node scripts/build-assets.mjs"
 	},
 	"devDependencies": {

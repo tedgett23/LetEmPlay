@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { flickBasket, routes, scoreFirstMove, swipe, visit } from './arcade';
 
-// MVP.md §8.3 — after the first load, everything works with no network.
+// After the first load, everything works with no network.
 test('works fully offline after first visit', async ({ page, context }) => {
 	await page.goto('/');
 	await page.evaluate(async () => {

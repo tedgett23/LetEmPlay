@@ -1,4 +1,4 @@
-// Shared palette (MVP.md §9). Keep in sync with the CSS tokens in routes/+layout.svelte.
+// Shared palette. Keep in sync with the CSS tokens in routes/+layout.svelte.
 export const palette = {
 	brand: 0x5b4cf0,
 	bg: 0x1d1846,

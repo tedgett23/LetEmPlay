@@ -1,4 +1,4 @@
-// Mirrors CREDITS.md. Shown as plain text in-app — never as links (MVP.md §2.3).
+// Mirrors CREDITS.md. Shown as plain text in-app — never as links.
 export interface Credit {
 	pack: string;
 	author: string;

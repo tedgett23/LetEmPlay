@@ -1,4 +1,4 @@
-// Board rules (MVP.md §10.1). A board is a flat array of SIZE*SIZE cells:
+// Board rules. A board is a flat array of SIZE*SIZE cells:
 // 0 = empty, 1..N = a color index. All functions are pure.
 import type { Piece } from './pieces';
 

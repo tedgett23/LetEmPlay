@@ -1,4 +1,4 @@
-// Asset pipeline (MVP.md §9). Turns the Kenney source packs in assets-src/ into the
+// Asset pipeline. Turns the Kenney source packs in assets-src/ into the
 // files the games load from static/assets/. Run: pnpm assets
 //
 // - Extracts each assets-src/kenney/*.zip (needs the `unzip` CLI) if not already extracted.

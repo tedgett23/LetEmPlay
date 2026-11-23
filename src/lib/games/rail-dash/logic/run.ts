@@ -1,4 +1,4 @@
-// One Rail Dash run (MVP.md §10.3): the player runs forward forever, the world is generated from
+// One Rail Dash run: the player runs forward forever, the world is generated from
 // validated patterns, and the run ends on a head-on hit. Pure state + step(); the renderer reads
 // it. Positions along the track are absolute metres (`distance`, obstacle `s`); the renderer
 // subtracts `distance` so the world moves toward a player who stays at z = 0.

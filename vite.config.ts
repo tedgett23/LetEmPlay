@@ -10,9 +10,9 @@ export default defineConfig({
 				runes: ({ filename }) =>
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
-			// Fully static output. No server, no API routes (MVP.md §3, §4).
+			// Fully static output. No server, no API routes.
 			adapter: adapter({ fallback: undefined, strict: true }),
-			// MVP.md §8: zero third-party requests. Emitted as a <meta> tag on prerendered pages.
+			// Zero third-party requests. Emitted as a <meta> tag on prerendered pages.
 			// If a library needs 'unsafe-eval' or a remote origin, do NOT loosen this — flag it.
 			csp: {
 				mode: 'hash',
