@@ -19,6 +19,7 @@
 	"aliases": {
 		"coin": "../../rail-dash/sfx/coin",
 		"complete": "../../block-drop/sfx/boardClear",
-		"gameOver": "../../block-drop/sfx/gameOver"
+		"gameOver": "../../block-drop/sfx/gameOver",
+		"oops": "../../goal/sfx/taken"
 	}
 }

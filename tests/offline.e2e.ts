@@ -5,6 +5,7 @@ import {
 	routes,
 	scoreFirstMove,
 	climbFirstLevel,
+	scoreFirstGoal,
 	swipe,
 	visit
 } from './helpers';
@@ -45,6 +46,10 @@ test('works fully offline after first visit', async ({ page, context }) => {
 	await page.getByRole('button', { name: 'Play', exact: true }).click();
 	await swipe(page, 'right');
 	await expect(page.locator('.host')).toHaveAttribute('data-score', /^[1-9]\d*$/);
+
+	await page.goto('/');
+	await page.getByRole('link', { name: /Goal/ }).click();
+	await scoreFirstGoal(page);
 
 	await page.goto('/');
 	await page.getByRole('link', { name: /Web Slinger/ }).click();

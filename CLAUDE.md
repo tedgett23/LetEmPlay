@@ -89,6 +89,16 @@ Use the Makefile targets in [`development.md`](development.md): `make unit` or `
   model pre-rendered to a sprite sheet by `scripts/render-sprites.mjs` (Three.js in the test
   browser, with custom-painted hero and robber skins); `pnpm assets` runs it. Crates on ledges
   smash when you fly through them and pop out coins.
+- Goal (`src/lib/games/goal/`) renders the 2D collision course in Three.js with a perspective
+  camera following behind the ball. Level coordinates `(x,y)` map to world `(x,0,z=y)`.
+  The static scenery is batched into vertex-colored meshes. Drag anywhere to roll the ball;
+  each finger delta moves a ground target through the camera projection. A fast release kicks
+  along the last part of the stroke; a gentle lift coasts. Chasers run at the ball as soon as
+  it is dribbled or kicked and slide along walls rather than path round them. A ball faster than
+  `knockSpeed` knocks them over; a slower one gets taken (a ball lost, level restarts). Levels
+  are wall outlines in `logic/levels.ts`: the outline starts at the right goal post and ends at
+  the left one, and that closing edge is the goal mouth. A unit-test robot must score in every
+  level with the chasers running. Everything is drawn in code; sounds only from the packs.
 - Rail Dash (`src/lib/games/rail-dash/`) is the Three.js game. Its HUD is plain DOM inside the
   container; the Pause button stops `pointerdown` propagation so the swipe detector doesn't
   capture it. Swipes use `attachGestures(..., { swipeOnMove: true })` so moves start mid-gesture.

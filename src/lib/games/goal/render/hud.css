@@ -1,0 +1,95 @@
+.goal-hud {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	color: #fffdf1;
+	font-family: ui-rounded, system-ui, sans-serif;
+	font-weight: 850;
+	text-shadow: 0 1px 2px #193c4d55;
+}
+.goal-card,
+.goal-result,
+.goal-pause,
+.goal-coach {
+	background: #17384ce8;
+	box-shadow: 0 3px 0 #12334440;
+}
+.goal-card {
+	position: absolute;
+	left: 12px;
+	top: 12px;
+	display: grid;
+	gap: 1px;
+	border-left: 5px solid #ffcc58;
+	border-radius: 4px 15px 15px 4px;
+	padding: 6px 14px;
+}
+.goal-stage {
+	color: #ffdc84;
+	text-transform: uppercase;
+	font-size: 11px;
+	letter-spacing: 0.12em;
+}
+.goal-course {
+	font-size: 16px;
+}
+.goal-result {
+	position: absolute;
+	right: 71px;
+	top: 12px;
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	padding: 5px 13px;
+	border-radius: 16px;
+	height: 45px;
+}
+.goal-points {
+	font-size: 25px;
+	font-variant-numeric: tabular-nums;
+}
+.goal-balls {
+	font-size: 12px;
+	color: #ffda73;
+	letter-spacing: 1px;
+}
+.goal-pause {
+	position: absolute;
+	top: 10px;
+	right: 12px;
+	pointer-events: auto;
+	touch-action: manipulation;
+	border: none;
+	border-radius: 16px;
+	color: white;
+	font-size: 22px;
+	font-weight: 900;
+	width: 50px;
+	height: 50px;
+}
+.goal-note,
+.goal-coach {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	text-align: center;
+}
+.goal-note {
+	top: 29%;
+	font-size: clamp(27px, 8vw, 64px);
+	line-height: 1.1;
+	white-space: pre-line;
+	width: 90%;
+	color: #fff9c8;
+	text-shadow:
+		0 3px 0 #214658,
+		0 0 8px #264957;
+}
+.goal-coach {
+	bottom: 5%;
+	width: max-content;
+	max-width: 94%;
+	font-size: clamp(14px, 3.6vw, 20px);
+	border-radius: 22px;
+	padding: 10px 16px;
+}

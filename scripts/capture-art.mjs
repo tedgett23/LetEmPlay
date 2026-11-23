@@ -3,10 +3,12 @@
 //   - iOS launch (splash) screens for current iPhones and iPads
 //   - home-screen game thumbnails, screenshotted from the real games in a scripted moment
 // Run after `pnpm build`:  pnpm art   (serves build/ on a private port while it works)
+//   pnpm art goal web-slinger   retakes only those game thumbnails (no icons or splash screens)
 import { execFileSync, spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { chromium, devices } from '@playwright/test';
 import { doodleThumbnail } from './doodle-thumbnail.mjs';
+import { goalThumbnail } from './goal-thumbnail.mjs';
 
 const PORT = 4176;
 const ORIGIN = `http://localhost:${PORT}`;
@@ -243,7 +245,40 @@ const server = spawn('pnpm', ['exec', 'vite', 'preview', '--port', String(PORT),
 try {
 	await waitForServer();
 	const browser = await chromium.launch();
+	const shots = {
+		'block-drop': blockDrop,
+		'hoop-flick': hoopFlick,
+		'rail-dash': railDash,
+		'web-slinger': webSlinger,
+		goal: goalThumbnail,
+		'doodle-cove': doodleThumbnail
+	};
+	const only = process.argv.slice(2);
+	for (const id of only) if (!(id in shots)) throw new Error(`no thumbnail for "${id}"`);
 
+	if (!only.length) await iconsAndSplash(browser);
+
+	// Game thumbnails, in a phone-shaped browser.
+	mkdirSync('static/thumbs', { recursive: true });
+	for (const [id, shot] of Object.entries(shots)) {
+		if (only.length && !only.includes(id)) continue;
+		// 1.5× is plenty for a ~200 px card and keeps each image small.
+		const ctx = await browser.newContext({ ...devices['Pixel 7'], deviceScaleFactor: 1.5 });
+		const page = await ctx.newPage();
+		await shot(page, 'static/thumbs', ORIGIN);
+		await ctx.close();
+	}
+	await browser.close();
+	console.log(
+		only.length
+			? `thumbnails written: ${only.join(', ')}`
+			: 'icons, splash screens and thumbnails written'
+	);
+} finally {
+	server.kill();
+}
+
+async function iconsAndSplash(browser) {
 	// Icons.
 	mkdirSync('static/icons', { recursive: true });
 	writeFileSync('static/icons/favicon.svg', iconSvg(64));
@@ -291,18 +326,4 @@ try {
 	);
 	// Keep app.html in the project's formatting so `pnpm lint` stays clean.
 	execFileSync('pnpm', ['exec', 'prettier', '--write', 'src/app.html'], { stdio: 'ignore' });
-
-	// Game thumbnails, in a phone-shaped browser.
-	mkdirSync('static/thumbs', { recursive: true });
-	for (const shot of [blockDrop, hoopFlick, railDash, webSlinger, doodleThumbnail]) {
-		// 1.5× is plenty for a ~200 px card and keeps each image small.
-		const ctx = await browser.newContext({ ...devices['Pixel 7'], deviceScaleFactor: 1.5 });
-		const page = await ctx.newPage();
-		await shot(page, 'static/thumbs', ORIGIN);
-		await ctx.close();
-	}
-	await browser.close();
-	console.log('icons, splash screens and thumbnails written');
-} finally {
-	server.kill();
 }

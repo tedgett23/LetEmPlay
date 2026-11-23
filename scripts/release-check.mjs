@@ -21,7 +21,8 @@ const BUDGETS = {
 	'hoop-flick': 300 * KB,
 	'rail-dash': 350 * KB,
 	'doodle-cove': 25 * KB,
-	'web-slinger': 250 * KB
+	'web-slinger': 250 * KB,
+	goal: 250 * KB
 };
 const PRECACHE_BUDGET = 25 * KB * KB;
 /** Hosts that appear only as text: error-help links, XML namespaces, a console banner. */

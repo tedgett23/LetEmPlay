@@ -80,3 +80,17 @@ export const doodle = {
 		treat: 'Scoops of summer'
 	}
 } as const;
+
+export const goal = {
+	pause: 'Pause',
+	courses: ['Beacon Bay', 'Sunmill Strand', 'Clover Point'],
+	title: 'Goal',
+	blurb: 'Kick past the chasers and score',
+	hint: 'Drag to dribble. Flick to kick!',
+	level: (n: number) => `Level ${n}`,
+	goal: 'GOAL!',
+	allDown: 'Everyone down! +50',
+	taken: 'They got the ball!',
+	lastBall: 'Last ball!',
+	combo: ['', 'Bonk!', 'Double!', 'Triple!', 'Super!']
+} as const;

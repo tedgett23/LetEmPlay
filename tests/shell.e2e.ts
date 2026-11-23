@@ -6,6 +6,7 @@ import {
 	routes,
 	scoreFirstMove,
 	climbFirstLevel,
+	scoreFirstGoal,
 	swipe,
 	visit
 } from './helpers';
@@ -55,6 +56,12 @@ test('every route renders without outbound links or third-party traffic, includi
 			await page.getByRole('button', { name: 'Play', exact: true }).click();
 			const until = Date.now() + 10_000;
 			await climbFirstLevel(page);
+			// Deliberate observation window for delayed network activity.
+			await page.waitForTimeout(Math.max(0, until - Date.now()));
+		}
+		if (path === '/play/goal') {
+			const until = Date.now() + 10_000;
+			await scoreFirstGoal(page);
 			// Deliberate observation window for delayed network activity.
 			await page.waitForTimeout(Math.max(0, until - Date.now()));
 		}

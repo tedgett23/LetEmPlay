@@ -17,6 +17,9 @@
 		"buzzer"
 	],
 	"aliases": {
-		"buzzer": "../../block-drop/sfx/gameOver"
+		"buzzer": "../../block-drop/sfx/gameOver",
+		"rim": "../../goal/sfx/post",
+		"net": "../../goal/sfx/net",
+		"level": "../../goal/sfx/level"
 	}
 }

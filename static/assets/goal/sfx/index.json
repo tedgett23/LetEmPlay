@@ -1,0 +1,22 @@
+{
+	"formats": [
+		"m4a",
+		"ogg"
+	],
+	"sounds": [
+		"kick",
+		"thud",
+		"post",
+		"net",
+		"bush",
+		"bonk",
+		"goal",
+		"taken",
+		"level",
+		"gameOver"
+	],
+	"aliases": {
+		"goal": "../../block-drop/sfx/boardClear",
+		"gameOver": "../../block-drop/sfx/gameOver"
+	}
+}

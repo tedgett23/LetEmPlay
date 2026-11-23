@@ -36,6 +36,16 @@ describe('classifySwipe', () => {
 });
 
 describe('flickVelocity', () => {
+	it('uses the final cut after a held drag, and a stationary release has no kick', () => {
+		const turn = [
+			{ x: 0, y: 0, t: 0 },
+			{ x: 50, y: 0, t: 300 },
+			{ x: 50, y: -15, t: 316 },
+			{ x: 50, y: -30, t: 332 }
+		];
+		expect(flickVelocity(turn)).toEqual({ vx: 0, vy: -30 / 32 });
+		expect(flickVelocity([...turn, { x: 50, y: -30, t: 600 }])).toEqual({ vx: 0, vy: 0 });
+	});
 	it('measures over the trailing window, ignoring a slow start', () => {
 		const samples = [
 			{ x: 0, y: 0, t: 0 },

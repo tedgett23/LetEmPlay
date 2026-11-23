@@ -288,9 +288,29 @@ function webSlinger() {
 	console.log('web-slinger assets written');
 }
 
+// ---- Goal ------------------------------------------------------------------------------------
+// Everything drawn in code; sounds only.
+
+function goal() {
+	buildSfx(join(OUT, 'goal', 'sfx'), {
+		kick: 'impact-sounds/Audio/impactSoft_heavy_002.ogg',
+		thud: 'impact-sounds/Audio/impactWood_light_001.ogg',
+		post: 'impact-sounds/Audio/impactMetal_light_002.ogg',
+		net: 'interface-sounds/Audio/scratch_002.ogg',
+		bush: 'impact-sounds/Audio/footstep_grass_001.ogg',
+		bonk: 'impact-sounds/Audio/impactPunch_medium_001.ogg',
+		goal: 'interface-sounds/Audio/confirmation_004.ogg',
+		taken: 'interface-sounds/Audio/error_005.ogg',
+		level: 'interface-sounds/Audio/maximize_008.ogg',
+		gameOver: 'interface-sounds/Audio/bong_001.ogg'
+	});
+	console.log('goal assets written');
+}
+
 extractAll();
 blockDrop();
 hoopFlick();
 await railDash();
 webSlinger();
+goal();
 dedupeSounds(OUT);

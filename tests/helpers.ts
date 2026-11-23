@@ -20,6 +20,7 @@ export const routes = [
 	['/play/hoop-flick', 'Hoop Flick'],
 	['/play/rail-dash', 'Rail Dash'],
 	['/play/web-slinger', 'Web Slinger'],
+	['/play/goal', 'Goal'],
 	['/play/doodle-cove', 'Doodle Cove']
 ] as const;
 
@@ -94,10 +95,10 @@ const BALL_IN_HAND = { x: 360, y: 1150 };
  * moves a frame apart, and frames take hundreds of ms under software WebGL, so a mouse flick
  * there can't reach a real speed.
  */
-async function cdpFlick(page: Page, speed: number) {
+async function cdpFlick(page: Page, speed: number, origin = BALL_IN_HAND) {
 	const point = await toPage(page);
 	const cdp = await page.context().newCDPSession(page);
-	const start = point(BALL_IN_HAND.x, BALL_IN_HAND.y);
+	const start = point(origin.x, origin.y);
 	const scale = point(1, 0).x - point(0, 0).x;
 	const t0 = Date.now() / 1000;
 	const at = (i: number) => ({ x: start.x, y: start.y - speed * scale * 16 * i });
@@ -126,9 +127,9 @@ async function cdpFlick(page: Page, speed: number) {
  * between events on the page's own clock so the game measures an exact speed. Uses the mouse
  * pointer id, which is always active, so the game's pointer capture accepts it.
  */
-async function pageFlick(page: Page, speed: number) {
+async function pageFlick(page: Page, speed: number, origin = BALL_IN_HAND) {
 	const point = await toPage(page);
-	const start = point(BALL_IN_HAND.x, BALL_IN_HAND.y);
+	const start = point(origin.x, origin.y);
 	const scale = point(1, 0).x - point(0, 0).x;
 	await page.evaluate(
 		({ x, y, perMs }) => {
@@ -255,4 +256,41 @@ export async function drawLine(page: Page, angle: number, length = 340) {
 export async function climbFirstLevel(page: Page) {
 	await drawLine(page, 100);
 	await drawLine(page, 60);
+}
+
+// ---- Goal --------------------------------------------------------------------------------------
+
+/** Start Goal from a saved run (level index, score, balls) and press Continue. */
+export async function continueGoal(
+	page: Page,
+	baseURL: string,
+	run: { levelIndex: number; score: number; balls: number }
+) {
+	const value = JSON.stringify({ v: 1, d: run });
+	await page.context().setStorageState({
+		cookies: [],
+		origins: [{ origin: baseURL, localStorage: [{ name: 'letemplay:v1:goal:run', value }] }]
+	});
+	await page.goto('/play/goal');
+	await page.getByRole('button', { name: 'Continue' }).click();
+	await expect(page.locator('.host')).toHaveAttribute('data-phase', 'playing');
+}
+
+/** Flick up the pitch at a repeatable release speed in logical px/ms. */
+export async function kickBall(page: Page, speed = 3) {
+	// On software WebGL, round trips for separate CDP events can consume several seconds
+	// of game time: defenders would steal the ball halfway through a nominal 128ms swipe.
+	await pageFlick(page, speed, { x: 360, y: 900 });
+}
+
+/** Goal's first level: a full-strength kick straight up scores (the unit tests check this). */
+export async function scoreFirstGoal(page: Page) {
+	await page.getByRole('button', { name: 'Play', exact: true }).click();
+	await expect(page.locator('.host')).toHaveAttribute('data-phase', 'playing');
+	await kickBall(page);
+	await expect
+		.poll(async () => Number(await page.locator('.host').getAttribute('data-score')), {
+			timeout: 10_000
+		})
+		.toBeGreaterThanOrEqual(50);
 }

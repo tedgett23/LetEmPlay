@@ -46,6 +46,12 @@ export function flickVelocity(samples: Sample[], windowMs = 80): { vx: number; v
 	if (!last || samples.length < 2) return { vx: 0, vy: 0 };
 	let first = samples[0]!;
 	for (let i = samples.length - 2; i >= 0; i--) {
+		// Browsers send no moves while a finger rests. Don't average a final sharp
+		// cut with a long stationary hold (or launch a stale flick after pausing).
+		if (samples[i + 1]!.t - samples[i]!.t > windowMs) {
+			first = samples[i + 1]!;
+			break;
+		}
 		first = samples[i]!;
 		if (last.t - first.t >= windowMs) break;
 	}
@@ -65,7 +71,7 @@ export interface GestureHandlers {
 	onDragStart?(p: { x: number; y: number }): void;
 	/** `p` includes `dragOffsetY` so the dragged item sits above the finger. */
 	onDragMove?(p: { x: number; y: number }): void;
-	onDragEnd?(p: { x: number; y: number }): void;
+	onDragEnd?(p: { x: number; y: number }, velocity: { vx: number; vy: number }): void;
 	onDragCancel?(): void;
 	onTap?(p: { x: number; y: number }): void;
 }
@@ -133,7 +139,7 @@ export function attachGestures(
 		const dx = p.x - first.x;
 		const dy = p.y - first.y;
 		const duration = e.timeStamp - first.t;
-		h.onDragEnd?.({ x: p.x, y: p.y + offsetY });
+		h.onDragEnd?.({ x: p.x, y: p.y + offsetY }, flickVelocity(samples));
 		const dir = classifySwipe(dx, dy, duration, swipeOpts);
 		if (swiped) {
 			// Already handled during the move.
