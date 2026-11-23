@@ -26,6 +26,6 @@ export const credits: Credit[] = [
 		pack: 'Animated Characters: Protagonists',
 		author: 'Kenney',
 		license: 'CC0 1.0',
-		usedIn: 'Rail Dash, Web Slinger'
+		usedIn: 'Rail Dash, Web Slinger, Goal'
 	}
 ];

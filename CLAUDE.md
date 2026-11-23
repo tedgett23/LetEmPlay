@@ -98,7 +98,7 @@ Use the Makefile targets in [`development.md`](development.md): `make unit` or `
   `knockSpeed` knocks them over; a slower one gets taken (a ball lost, level restarts). Levels
   are wall outlines in `logic/levels.ts`: the outline starts at the right goal post and ends at
   the left one, and that closing edge is the goal mouth. A unit-test robot must score in every
-  level with the chasers running. Everything is drawn in code; sounds only from the packs.
+  level with the chasers running. The players share Rail Dash's Kenney rig and use painted soccer kits.
 - Rail Dash (`src/lib/games/rail-dash/`) is the Three.js game. Its HUD is plain DOM inside the
   container; the Pause button stops `pointerdown` propagation so the swipe detector doesn't
   capture it. Swipes use `attachGestures(..., { swipeOnMove: true })` so moves start mid-gesture.

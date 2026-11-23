@@ -4,6 +4,7 @@
 import { asset } from '$app/paths';
 import { SRGBColorSpace, TextureLoader, type Object3D, type Texture } from 'three';
 import { GLTFLoader, type GLTF } from 'three/addons/loaders/GLTFLoader.js';
+import { loadCharacter } from '../../../kit/three-character';
 
 const TRAINS = [
 	'train-electric-city-a',
@@ -57,7 +58,7 @@ export function loadModels(onProgress: (p: number) => void): Promise<Models> {
 		Promise.all(TRAINS.map((t) => glb(t))),
 		glb('railroad-straight'),
 		Promise.all(BUILDINGS.map((b) => glb(b))),
-		glb('character'),
+		loadCharacter().then(tick),
 		Promise.all(
 			SKINS.map((s) =>
 				textures.loadAsync(`${SKIN_DIR}${s}.png`).then((t) => {

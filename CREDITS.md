@@ -12,12 +12,12 @@ page shows as plain text.
 | Impact Sounds 1.0                 | Kenney | CC0 1.0 | 2026-11-22 | Hoop Flick, Rail Dash, Web Slinger, Goal             |
 | Train Kit                         | Kenney | CC0 1.0 | 2026-11-22 | Rail Dash                                            |
 | City Kit (Commercial) 2.1         | Kenney | CC0 1.0 | 2026-11-22 | Rail Dash                                            |
-| Animated Characters: Protagonists | Kenney | CC0 1.0 | 2026-11-22 | Rail Dash, Web Slinger                               |
+| Animated Characters: Protagonists | Kenney | CC0 1.0 | 2026-11-22 | Rail Dash, Web Slinger, Goal                         |
 
 Sports Pack (Kenney, CC0 1.0, downloaded 2026-11-22) is in `assets-src/` but unused: its balls
 are 18 px, so Hoop Flick draws its ball, hoop and court in code.
 
-Goal's areas, players, ball and obstacles are drawn in code; only its sounds come from the packs above.
+Goal's players wear custom soccer uniforms on the shared animated character. Its courses, ball and obstacles are drawn in code.
 
 Doodle Cove's ten coloring pages are original path drawings. The game uses no third-party art packs.
 

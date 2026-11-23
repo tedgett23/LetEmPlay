@@ -7,21 +7,18 @@ import {
 	CylinderGeometry,
 	Euler,
 	Float32BufferAttribute,
-	Group,
 	IcosahedronGeometry,
 	Matrix3,
 	Matrix4,
 	Mesh,
 	MeshLambertMaterial,
 	Quaternion,
-	SphereGeometry,
 	Vector3
 } from 'three';
 
 const box = new BoxGeometry(),
 	tube = new CylinderGeometry(1, 1, 1, 10),
 	cone = new CylinderGeometry(0, 1, 1, 8),
-	bulb = new SphereGeometry(1, 14, 10),
 	stone = new IcosahedronGeometry(1, 0),
 	crown = new IcosahedronGeometry(1, 1);
 const point = new Vector3(),
@@ -33,7 +30,7 @@ const point = new Vector3(),
 	angles = new Euler(),
 	offset = new Vector3(),
 	scale = new Vector3();
-export const solid = { box, tube, cone, bulb, stone, crown };
+export const solid = { box, tube, cone, stone, crown };
 export class Batch {
 	private vertices: number[] = [];
 	private colors: number[] = [];
@@ -190,49 +187,4 @@ export function football(mat: MeshLambertMaterial) {
 	g.setAttribute('normal', new Float32BufferAttribute(ns, 3));
 	g.setAttribute('color', new Float32BufferAttribute(cs, 3));
 	return new Mesh(g, mat);
-}
-
-export function footballer(mat: MeshLambertMaterial, index: number, keeper: boolean) {
-	const root = new Group(),
-		body = new Group();
-	root.add(body);
-	const jersey = keeper ? 0xffb425 : 0xed4b46,
-		trim = keeper ? 0x217874 : 0xffe4aa,
-		skin = [0xba7954, 0xf4bc8c, 0x955937][index % 3]!,
-		hair = [0x3d2b37, 0x744030, 0x29283a][index % 3]!;
-	const b = new Batch();
-	b.add(tube, 0x263b58, 0, 34, 0, 12, 12, 9);
-	b.add(tube, jersey, 0, 48, 0, 15, 20, 10);
-	b.add(box, trim, 0, 51, 9, 23, 3, 1.7);
-	b.add(box, 0xffffff, 7, 54, 10, 3, 4, 1);
-	b.add(tube, skin, 0, 61, 0, 5, 8, 5);
-	b.add(bulb, skin, 0, 72, 1, 11, 13, 10);
-	b.add(bulb, hair, 0, 79, -1, 11.5, 8, 10.6);
-	b.add(box, hair, -7, 75, 8, 6, 5, 3);
-	for (const x of [-4, 4]) b.add(bulb, 0x383243, x, 72, 10, 1.35, 1.7, 1);
-	body.add(b.mesh(mat));
-	const legs: Group[] = [],
-		arms: Group[] = [];
-	for (const sign of [-1, 1]) {
-		const leg = new Group(),
-			arm = new Group(),
-			l = new Batch(),
-			a = new Batch();
-		leg.position.set(sign * 7, 32, 0);
-		arm.position.set(sign * 14, 54, 0);
-		l.add(tube, 0x263b58, 0, -4, 0, 6, 11, 6);
-		l.add(tube, skin, 0, -12, 0, 4, 8, 4);
-		l.add(tube, trim, 0, -21, 0, 4.5, 12, 4.5);
-		l.add(bulb, 0x273245, 0, -28, 3, 5.5, 4, 9);
-		leg.add(l.mesh(mat));
-		a.add(bulb, jersey, sign * 2, -3, 0, 6.5, 8, 7);
-		a.add(tube, skin, sign * 3, -12, 0, 3.7, 13, 4);
-		a.add(bulb, keeper ? 0x257b82 : skin, sign * 3, -20, 2, keeper ? 6 : 4.3, 5, 4.5);
-		arm.add(a.mesh(mat));
-		arm.rotation.z = sign * 0.15;
-		body.add(leg, arm);
-		legs.push(leg);
-		arms.push(arm);
-	}
-	return { root, body, legs, arms };
 }

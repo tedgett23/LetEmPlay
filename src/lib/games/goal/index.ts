@@ -21,19 +21,36 @@ import {
 import { TUNING } from './logic/tuning';
 import { H, W } from './render/layout';
 import { GoalView } from './render/view';
+import { loadSquadAssets, type Squad } from './render/footballer';
 
 const SFX = asset('assets/goal/sfx/index.json').replace(/\/index\.json$/, '');
 /** Let the last moment play before the shell shows the game-over card. */
 const OVER_DELAY = 1.2;
 /** Gap between wall-bounce sounds, so a ball rattling in a corner isn't a buzz. */
 const BOUNCE_GAP = 0.06;
+let squad: Squad;
 
 const goal: GameDefinition = {
 	id: 'goal',
 	logicalSize: { width: W, height: H },
 	orientation: 'portrait',
 
-	preload: ({ audio, signal }, onProgress) => loadSoundSet(audio, SFX, signal, onProgress),
+	async preload({ audio, signal }, onProgress) {
+		let art = 0,
+			sounds = 0;
+		const report = () => onProgress(art * 0.75 + sounds * 0.25);
+		await Promise.all([
+			loadSquadAssets().then((result) => {
+				squad = result;
+				art = 1;
+				report();
+			}),
+			loadSoundSet(audio, SFX, signal, (p) => {
+				sounds = p;
+				report();
+			})
+		]);
+	},
 
 	create(ctx): GameInstance {
 		const savedRaw: unknown = ctx.storage.get<unknown>('run', null);
@@ -48,6 +65,7 @@ const goal: GameDefinition = {
 		const inputEvents: GameEvent[] = [];
 		const view = new GoalView(
 			ctx.container,
+			squad,
 			() => ctx.settings.reducedMotion,
 			() => {
 				if (playing) ctx.events.onRequestPause();

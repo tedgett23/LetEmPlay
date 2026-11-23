@@ -27,7 +27,8 @@ import { goal as str } from '../../../strings';
 import type { GameState } from '../logic/game';
 import { TUNING } from '../logic/tuning';
 import { buildCourse } from './course';
-import { football, footballer, solid } from './models';
+import { football, solid } from './models';
+import { footballer, teamKit, type Squad } from './footballer';
 import { CAMERA, groundDirection, H, W } from './layout';
 import { MatchHud } from './hud';
 
@@ -78,6 +79,7 @@ export class GoalView {
 	);
 	private course?: ReturnType<typeof buildCourse>;
 	private players: { model: ReturnType<typeof footballer>; shadow: Mesh }[] = [];
+	private kits: [MeshLambertMaterial, MeshLambertMaterial];
 	private state?: GameState;
 	private hud: MatchHud;
 	private trail = new Float32Array(N * 2);
@@ -107,10 +109,12 @@ export class GoalView {
 	private cosHeading = 1;
 	constructor(
 		host: HTMLElement,
+		private squad: Squad,
 		private reducedMotion: () => boolean,
 		pause: () => void
 	) {
 		const r = this.renderer;
+		this.kits = [teamKit(squad.skin, false), teamKit(squad.skin, true)];
 		r.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
 		r.domElement.style.cssText = 'display:block;width:100%;height:100%;touch-action:none';
 		host.append(r.domElement);
@@ -184,9 +188,7 @@ export class GoalView {
 	private clearPlayers() {
 		for (const { model, shadow } of this.players) {
 			this.scene.remove(model.root, shadow);
-			model.root.traverse((o) => {
-				if (o instanceof Mesh) (o.geometry as BufferGeometry).dispose();
-			});
+			model.destroy();
 		}
 		this.players = [];
 	}
@@ -215,7 +217,7 @@ export class GoalView {
 			}
 			this.clearPlayers();
 			for (let i = 0; i < s.chasers.length + Number(!!s.keeper); i++) {
-				const model = footballer(this.mat, i, i === s.chasers.length),
+				const model = footballer(this.squad, this.kits[i === s.chasers.length ? 1 : 0], i),
 					shadow = new Mesh(this.disk, this.shade);
 				this.scene.add(model.root, shadow);
 				this.players.push({ model, shadow });
@@ -269,15 +271,11 @@ export class GoalView {
 			const down = c?.down ?? false;
 			model.body.rotation.x = down ? -1.38 : 0;
 			model.body.position.y = down ? 13 : 0;
-			const moving = c ? Math.hypot(c.vx, c.vy) > 12 : Math.abs(p.vx) > 12;
+			const speed = c ? Math.hypot(c.vx, c.vy) : Math.abs(p.vx);
 			if (!down)
 				model.root.rotation.y =
-					c && moving ? Math.atan2(c.vx, c.vy) : Math.atan2(b.x - p.x, b.y - p.y);
-			const stride = moving && !down ? Math.sin(this.time * 12 + i) * 0.72 : 0;
-			model.legs[0]!.rotation.x = stride;
-			model.legs[1]!.rotation.x = -stride;
-			model.arms[0]!.rotation.x = -stride - 0.14;
-			model.arms[1]!.rotation.x = stride - 0.14;
+					c && speed > 12 ? Math.atan2(c.vx, c.vy) : Math.atan2(b.x - p.x, b.y - p.y);
+			model.animate(dt, speed, down);
 		}
 		this.updateRibbon(b.x, b.y, speed);
 		this.burstTime = Math.max(0, this.burstTime - dt);
@@ -368,6 +366,10 @@ export class GoalView {
 		this.stopResize();
 		this.hud.destroy();
 		this.clearPlayers();
+		for (const kit of this.kits) {
+			kit.map?.dispose();
+			kit.dispose();
+		}
 		this.course?.dispose();
 		this.mat.dispose();
 		this.ball.geometry.dispose();
