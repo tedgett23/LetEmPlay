@@ -35,6 +35,14 @@ export const games: GameEntry[] = [
 		color: '#4cc9f0',
 		status: 'ready',
 		load: () => import('./rail-dash').then((m) => m.default)
+	},
+	{
+		id: 'web-slinger',
+		title: 'Web Slinger',
+		blurb: 'Swing and catch the robbers',
+		color: '#3dd68c',
+		status: 'ready',
+		load: () => import('./web-slinger').then((m) => m.default)
 	}
 ];
 

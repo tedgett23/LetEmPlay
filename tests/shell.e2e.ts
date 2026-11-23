@@ -1,5 +1,13 @@
 import { expect, test } from '@playwright/test';
-import { dragPiece, flickBasket, routes, scoreFirstMove, swipe, visit } from './helpers';
+import {
+	dragPiece,
+	flickBasket,
+	routes,
+	scoreFirstMove,
+	climbFirstLevel,
+	swipe,
+	visit
+} from './helpers';
 
 test('every route renders without outbound links or third-party traffic, including during play', async ({
 	page,
@@ -39,6 +47,13 @@ test('every route renders without outbound links or third-party traffic, includi
 			await swipe(page, 'left');
 			await swipe(page, 'up');
 			await expect(page.locator('.host')).toHaveAttribute('data-score', /^[1-9]\d*$/);
+			// Deliberate observation window for delayed network activity.
+			await page.waitForTimeout(Math.max(0, until - Date.now()));
+		}
+		if (path === '/play/web-slinger') {
+			await page.getByRole('button', { name: 'Play', exact: true }).click();
+			const until = Date.now() + 10_000;
+			await climbFirstLevel(page);
 			// Deliberate observation window for delayed network activity.
 			await page.waitForTimeout(Math.max(0, until - Date.now()));
 		}

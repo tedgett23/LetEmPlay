@@ -261,7 +261,27 @@ async function railDash() {
 	console.log('rail-dash assets written');
 }
 
+// ---- Web Slinger -------------------------------------------------------------------------------
+// Drawn in code; sounds only.
+
+function webSlinger() {
+	buildSfx(join(OUT, 'web-slinger', 'sfx'), {
+		web: 'interface-sounds/Audio/switch_002.ogg',
+		whoosh: 'interface-sounds/Audio/scroll_003.ogg',
+		land: 'impact-sounds/Audio/footstep_concrete_002.ogg',
+		coin: 'interface-sounds/Audio/select_003.ogg',
+		caught: 'interface-sounds/Audio/confirmation_002.ogg',
+		throw: 'interface-sounds/Audio/scroll_001.ogg',
+		splash: 'impact-sounds/Audio/impactSoft_medium_002.ogg',
+		oops: 'interface-sounds/Audio/error_005.ogg',
+		complete: 'interface-sounds/Audio/confirmation_004.ogg',
+		gameOver: 'interface-sounds/Audio/bong_001.ogg'
+	});
+	console.log('web-slinger assets written');
+}
+
 extractAll();
 blockDrop();
 hoopFlick();
 await railDash();
+webSlinger();

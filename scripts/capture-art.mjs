@@ -197,6 +197,31 @@ async function railDash(page, out) {
 	});
 }
 
+async function webSlinger(page, out) {
+	// "Two robbers": wait for the level title to clear, then draw a line and photograph the hero
+	// with the aim guide (dotted path and target ring).
+	await page.addInitScript(() => {
+		const run = { v: 1, d: { levelIndex: 4, score: 0, hearts: 3 } };
+		localStorage.setItem('letemplay:v1:web-slinger:run', JSON.stringify(run));
+	});
+	await page.goto(`${ORIGIN}/play/web-slinger`);
+	await page.getByRole('button', { name: 'Continue' }).click();
+	await page.waitForTimeout(2600);
+	const { s, P } = await toPage(page);
+	const r = (35 * Math.PI) / 180;
+	const from = P(360, 800);
+	await page.mouse.move(from.x, from.y);
+	await page.mouse.down();
+	for (let i = 1; i <= 5; i++) {
+		const p = P(360 + Math.cos(r) * 52 * i, 800 - Math.sin(r) * 52 * i);
+		await page.mouse.move(p.x, p.y);
+	}
+	await page.waitForTimeout(200);
+	const a = P(0, 540);
+	await shoot(page, `${out}/web-slinger.jpg`, { x: a.x, y: a.y, width: 720 * s, height: 720 * s });
+	await page.mouse.up();
+}
+
 // ---- Main ----------------------------------------------------------------------------------
 
 async function waitForServer() {
@@ -268,7 +293,7 @@ try {
 
 	// Game thumbnails, in a phone-shaped browser.
 	mkdirSync('static/thumbs', { recursive: true });
-	for (const shot of [blockDrop, hoopFlick, railDash]) {
+	for (const shot of [blockDrop, hoopFlick, railDash, webSlinger]) {
 		// 1.5× is plenty for a ~200 px card and keeps each image small.
 		const ctx = await browser.newContext({ ...devices['Pixel 7'], deviceScaleFactor: 1.5 });
 		const page = await ctx.newPage();

@@ -18,7 +18,8 @@ export const routes = [
 	['/credits', 'Credits'],
 	['/play/block-drop', 'Block Drop'],
 	['/play/hoop-flick', 'Hoop Flick'],
-	['/play/rail-dash', 'Rail Dash']
+	['/play/rail-dash', 'Rail Dash'],
+	['/play/web-slinger', 'Web Slinger']
 ] as const;
 
 export async function visit(page: Page, path: string, heading: string) {
@@ -175,4 +176,56 @@ export async function seedRandom(page: Page, seed = 1) {
 			return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
 		};
 	}, seed);
+}
+
+// ---- Web Slinger -------------------------------------------------------------------------------
+
+/** Start Web Slinger from a saved run (level index, score, hearts) and press Continue. */
+export async function continueWebSlinger(
+	page: Page,
+	baseURL: string,
+	run: { levelIndex: number; score: number; hearts: number }
+) {
+	const value = JSON.stringify({ v: 1, d: run });
+	await page.context().setStorageState({
+		cookies: [],
+		origins: [{ origin: baseURL, localStorage: [{ name: 'letemplay:v1:web-slinger:run', value }] }]
+	});
+	await page.goto('/play/web-slinger');
+	await page.getByRole('button', { name: 'Continue' }).click();
+	await expect(page.locator('.host')).toHaveAttribute('data-phase', 'playing');
+}
+
+/**
+ * Web Slinger world metres → page pixels while the camera is at the bottom of the shaft (it
+ * stays there until the hero climbs above about 6.6 m; see web-slinger/render/layout.ts).
+ */
+export async function webSlingerPoint(page: Page) {
+	const P = await toPage(page);
+	return (x: number, y: number) => P(x * 54, 1280 - (y + 1) * 54);
+}
+
+/**
+ * Draw a Web Slinger line: from the middle of the screen, `angle` degrees from straight right
+ * (90 = up), `length` logical px (300+ is full strength), then wait for the hero to settle.
+ */
+export async function drawLine(page: Page, angle: number, length = 340) {
+	const P = await toPage(page);
+	const r = (angle * Math.PI) / 180;
+	const from = { x: 360, y: 800 };
+	const a = P(from.x, from.y);
+	await page.mouse.move(a.x, a.y);
+	await page.mouse.down();
+	for (let i = 1; i <= 6; i++) {
+		const p = P(from.x + Math.cos(r) * length * (i / 6), from.y - Math.sin(r) * length * (i / 6));
+		await page.mouse.move(p.x, p.y);
+	}
+	await page.mouse.up();
+	await page.waitForTimeout(1500);
+}
+
+/** Web Slinger's first level in two full-strength lines (the unit tests check this route). */
+export async function climbFirstLevel(page: Page) {
+	await drawLine(page, 100);
+	await drawLine(page, 60);
 }

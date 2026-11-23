@@ -1,8 +1,10 @@
 import { expect, test } from '@playwright/test';
-import { flickBasket, routes, scoreFirstMove, swipe, visit } from './helpers';
+import { flickBasket, routes, scoreFirstMove, climbFirstLevel, swipe, visit } from './helpers';
 
 // After the first load, everything works with no network.
 test('works fully offline after first visit', async ({ page, context }) => {
+	// Plays a move in every game offline; long by nature under software WebGL, not a timing race.
+	test.slow();
 	await page.goto('/');
 	await page.evaluate(async () => {
 		const reg = await navigator.serviceWorker.ready;
@@ -32,4 +34,14 @@ test('works fully offline after first visit', async ({ page, context }) => {
 	await page.getByRole('button', { name: 'Play', exact: true }).click();
 	await swipe(page, 'right');
 	await expect(page.locator('.host')).toHaveAttribute('data-score', /^[1-9]\d*$/);
+
+	await page.goto('/');
+	await page.getByRole('link', { name: /Web Slinger/ }).click();
+	await page.getByRole('button', { name: 'Play', exact: true }).click();
+	await climbFirstLevel(page);
+	await expect
+		.poll(async () => Number(await page.locator('.host').getAttribute('data-score')), {
+			timeout: 10_000
+		})
+		.toBeGreaterThanOrEqual(220);
 });
