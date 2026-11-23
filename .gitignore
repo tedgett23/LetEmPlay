@@ -40,7 +40,3 @@ test-results
 
 # Extracted asset packs (the zips are kept; run `pnpm assets`)
 /assets-src/kenney/*/
-
-# Markdown docs stay local for now, except the README
-*.md
-!/README.md
