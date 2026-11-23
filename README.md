@@ -7,7 +7,7 @@ no purchases, no tracking, no data leaves the device.
 original coloring pages and tap a shape to fill it. The pad and each book page save separately on the device.
 
 - **Agent and contributor guide:** [`CLAUDE.md`](CLAUDE.md)
-- **Development and testing:** [`development.md`](development.md) (`make help` for commands)
+- **Development and testing:** [`DEVELOPMENT.md`](DEVELOPMENT.md) (`make help` for commands)
 
 ```sh
 pnpm install

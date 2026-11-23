@@ -31,7 +31,7 @@ pnpm release-check       # after a build: JS budgets, offline size, CSP, links, 
 pnpm assets              # rebuild static/assets/ from the Kenney zips in assets-src/
 ```
 
-Use the Makefile targets in [`development.md`](development.md): `make unit` or `make smoke` while editing, then `make verify` before handoff. The gate includes the production build used by both browser projects.
+Use the Makefile targets in [`DEVELOPMENT.md`](DEVELOPMENT.md): `make unit` or `make smoke` while editing, then `make verify` before handoff. The gate includes the production build used by both browser projects.
 
 ## Stack quirks (SvelteKit 3 / Svelte 5)
 
