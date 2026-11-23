@@ -220,8 +220,8 @@ async function webSlinger(page, out) {
 		await page.mouse.move(p.x, p.y);
 	}
 	await page.waitForTimeout(200);
-	const a = P(0, 540);
-	await shoot(page, `${out}/web-slinger.jpg`, { x: a.x, y: a.y, width: 720 * s, height: 720 * s });
+	const a = P(230, 920);
+	await shoot(page, `${out}/web-slinger.jpg`, { x: a.x, y: a.y, width: 350 * s, height: 350 * s });
 	await page.mouse.up();
 }
 

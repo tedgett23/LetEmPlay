@@ -1,6 +1,6 @@
 // Renders Web Slinger's characters from the Kenney animated character (the same model Rail
 // Dash uses) into a 2D sprite sheet, so the game stays a light 2D game. Runs Three.js in the
-// test browser (Playwright's Chromium), paints custom skins (a teal hero with yellow goggles,
+// test browser (Playwright's Chromium), paints custom skins (a scarlet climber with a dark visor,
 // robbers in striped shirts with eye masks), and poses the model with its own animations.
 //   node scripts/render-sprites.mjs        (after `pnpm assets`; writes static/assets/web-slinger/)
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -14,7 +14,6 @@ const files = {
 	'/three.module.js': 'node_modules/three/build/three.module.js',
 	'/three.core.js': 'node_modules/three/build/three.core.js',
 	'/character.glb': 'static/assets/rail-dash/models/character.glb',
-	'/skin-hero.png': 'assets-src/kenney/animated-characters-protagonists/Skins/skaterMaleA.png',
 	'/skin-robber.png': 'assets-src/kenney/animated-characters-protagonists/Skins/criminalMaleA.png'
 };
 
@@ -37,13 +36,12 @@ import { clone } from 'three/addons/utils/SkeletonUtils.js';
 
 const img = (src) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.src = src; });
 
-// Paint a custom skin over a Kenney skin (all skins share one UV layout: face and hair top-left,
+// Paint onto the shared Kenney UV layout (face and hair top-left,
 // shirt bottom-left, shoes and gloves right, trousers bottom-right).
 function paint(base, kind) {
 	const c = document.createElement('canvas');
 	c.width = c.height = 1024;
 	const g = c.getContext('2d');
-	g.drawImage(base, 0, 0);
 	const eyes = () => {
 		for (const x of [287, 356]) {
 			g.fillStyle = '#ffffff'; g.beginPath(); g.arc(x, 219, 17, 0, Math.PI * 2); g.fill();
@@ -51,19 +49,31 @@ function paint(base, kind) {
 		}
 	};
 	if (kind === 'hero') {
-		g.fillStyle = '#16a99b'; g.fillRect(0, 490, 611, 534);            // suit
-		g.fillStyle = '#0e7b71'; g.fillRect(611, 764, 413, 260);          // trousers
-		g.fillStyle = '#16a99b'; g.fillRect(0, 0, 640, 150);              // hood
-		g.fillStyle = '#ffc83d'; g.fillRect(200, 190, 240, 58);           // goggle band
-		eyes();
-		g.fillStyle = '#ffc83d'; g.beginPath();                            // chest star
-		for (let k = 0; k < 10; k++) {
-			const a = -Math.PI / 2 + (k * Math.PI) / 5, r = k % 2 ? 26 : 60;
-			g.lineTo(320 + Math.cos(a) * r, 760 + Math.sin(a) * r);
-		}
-		g.fill();
-		g.fillStyle = '#ffc83d'; g.fillRect(824, 134, 200, 390);          // gloves
+		// Broad panels stay readable when a 256px pose is displayed a thumb's width tall.
+		const red = '#ea353c', shadow = '#b32034', ink = '#222532', slate = '#3c4250';
+		const rect = (color,x,y,w,h) => { g.fillStyle=color; g.fillRect(x,y,w,h); };
+		const panel = (color,points) => {
+			g.fillStyle=color; g.beginPath(); g.moveTo(points[0],points[1]);
+			for(let i=2;i<points.length;i+=2) g.lineTo(points[i],points[i+1]);
+			g.closePath(); g.fill();
+		};
+		rect(red,0,0,1024,1024);
+		// Fitted hood, wraparound visor and a single ice-blue lens with a reflected glint.
+		rect(shadow,0,0,640,88); rect(ink,0,187,640,60);
+		panel(ink,[203,184,246,173,393,173,436,186,418,247,372,261,268,261,222,245]);
+		panel('#80dce5',[222,191,249,184,389,184,417,191,405,228,370,244,273,244,237,230]);
+		panel('#dbfbef',[244,196,288,190,260,224,243,220]);
+		// Reinforced sides and a diagonal climbing harness with a bright, open buckle.
+		rect(shadow,0,490,640,60); rect(ink,0,670,62,140); rect(ink,578,670,62,140);
+		panel(ink,[213,758,240,749,421,943,400,961]);
+		g.strokeStyle='#fff0bb'; g.lineWidth=10; g.lineJoin='round'; g.strokeRect(307,838,30,34);
+		rect(ink,0,973,611,38); // belt
+		rect(ink,640,0,384,764); // gloves and split-sole boots
+		rect(red,640,141,180,83); rect(red,640,336,180,73);
+		rect(slate,826,197,198,18); rect(slate,826,493,198,18);
+		rect(shadow,611,764,413,260); rect(ink,611,889,413,76); // knee guards
 	} else {
+		g.drawImage(base, 0, 0);
 		g.fillStyle = '#ffffff'; g.fillRect(0, 490, 611, 534);            // shirt…
 		g.fillStyle = '#23243a';
 		for (let y = 520; y < 1024; y += 70) g.fillRect(0, y, 611, 34);   // …with stripes
@@ -91,7 +101,7 @@ cam.position.set(-6, 1.5, 5.5);
 cam.lookAt(0, 0.85, 0);
 
 const gltf = await new GLTFLoader().loadAsync('/character.glb');
-const skins = { hero: paint(await img('/skin-hero.png'), 'hero'), robber: paint(await img('/skin-robber.png'), 'robber') };
+const skins = { hero: paint(null, 'hero'), robber: paint(await img('/skin-robber.png'), 'robber') };
 
 window.renderFrame = (skin, clipName, time) => {
 	const model = clone(gltf.scene);
