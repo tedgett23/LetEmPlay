@@ -22,16 +22,16 @@ describe('storage', () => {
 		const s = createStorage('block-drop', m);
 		expect(s.set('board', [1, 2, 3])).toBe(true);
 		expect(s.get('board', [])).toEqual([1, 2, 3]);
-		expect([...m.data.keys()]).toEqual(['arcade:v1:block-drop:board']);
+		expect([...m.data.keys()]).toEqual(['letemplay:v1:block-drop:board']);
 	});
 
 	it('returns the fallback for missing, corrupt or wrong-version data', () => {
 		const m = memory();
 		const s = createStorage('g', m);
 		expect(s.get('x', 7)).toBe(7);
-		m.setItem('arcade:v1:g:x', '{not json');
+		m.setItem('letemplay:v1:g:x', '{not json');
 		expect(s.get('x', 7)).toBe(7);
-		m.setItem('arcade:v1:g:x', JSON.stringify({ v: 999, d: 1 }));
+		m.setItem('letemplay:v1:g:x', JSON.stringify({ v: 999, d: 1 }));
 		expect(s.get('x', 7)).toBe(7);
 	});
 

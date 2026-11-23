@@ -12,7 +12,7 @@ export const test = base.extend({
 export { expect };
 
 export const routes = [
-	['/', 'Arcade'],
+	['/', 'LetEmPlay'],
 	['/settings', 'Settings'],
 	['/parents', 'For parents'],
 	['/credits', 'Credits'],

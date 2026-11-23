@@ -1,12 +1,12 @@
 import type { Page } from '@playwright/test';
-import { dragPiece, expect, scoreFirstMove, test, toPage } from './arcade';
+import { dragPiece, expect, scoreFirstMove, test, toPage } from './helpers';
 
 // Logical layout (src/lib/games/block-drop/render/layout.ts): 720×1280, 80px cells,
 // board at (40, 250), tray slot centers at y=1050, pieces float 1.5 cells + half their
 // height above the finger.
 const CELL = 80;
 const BOARD = { x: 40, y: 250 };
-const KEY = 'arcade:v1:block-drop:run';
+const KEY = 'letemplay:v1:block-drop:run';
 
 /** Drag the piece in tray `slot` so a 1×1 piece lands on board cell (cx, cy). */
 async function dragDotTo(page: Page, slot: number, cx: number, cy: number) {

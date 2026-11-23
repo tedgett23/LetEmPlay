@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { flickBasket, routes, scoreFirstMove, swipe, visit } from './arcade';
+import { flickBasket, routes, scoreFirstMove, swipe, visit } from './helpers';
 
 // After the first load, everything works with no network.
 test('works fully offline after first visit', async ({ page, context }) => {

@@ -1,4 +1,4 @@
-import { expect, seedRandom, swipe, test } from './arcade';
+import { expect, seedRandom, swipe, test } from './helpers';
 
 test('a run scores distance as you go, with swipes along the way', async ({ page }) => {
 	await page.goto('/play/rail-dash');

@@ -4,7 +4,7 @@ import { self } from '$app/service-worker';
 import { immutable, assets, prerendered } from '$app/manifest';
 import { version } from '$app/env';
 
-const CACHE = `arcade-${version}`;
+const CACHE = `letemplay-${version}`;
 
 // Everything the app needs, so all games work fully offline after the first visit.
 const PRECACHE = [

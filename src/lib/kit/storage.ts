@@ -1,5 +1,5 @@
 // Namespaced, versioned, failure-safe local storage. Nothing ever leaves the device.
-const ROOT = 'arcade:v1';
+const ROOT = 'letemplay:v1';
 const SCHEMA = 1;
 
 export interface KVBackend {

@@ -46,11 +46,6 @@
 			</li>
 		{/each}
 	</ul>
-
-	<footer>
-		<a href={resolve('/parents')}>{t.forParents}</a>
-		<a href={resolve('/credits')}>{t.credits}</a>
-	</footer>
 </main>
 
 <style>
@@ -126,16 +121,5 @@
 	.soon {
 		opacity: 0.45;
 		filter: grayscale(0.4);
-	}
-	footer {
-		display: flex;
-		justify-content: center;
-		gap: 24px;
-		margin-top: 32px;
-	}
-	footer a {
-		color: var(--c-muted);
-		font-weight: 700;
-		padding: 12px 4px;
 	}
 </style>

@@ -8,7 +8,7 @@
 
 <main class="page">
 	<header class="topbar">
-		<a class="btn" href={resolve('/')}>← {t.back}</a>
+		<a class="btn" href={resolve('/settings')}>← {t.back}</a>
 		<h1>{t.credits}</h1>
 	</header>
 

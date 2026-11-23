@@ -3,13 +3,13 @@
 //   - iOS launch (splash) screens for current iPhones and iPads
 //   - home-screen game thumbnails, screenshotted from the real games in a scripted moment
 // Run after `pnpm build`:  pnpm art   (serves build/ on a private port while it works)
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { chromium, devices } from '@playwright/test';
 
 const PORT = 4176;
 const ORIGIN = `http://localhost:${PORT}`;
-const APP_NAME = 'Arcade';
+const APP_NAME = 'LetEmPlay';
 const BG = '#1d1846';
 const BRAND = '#5b4cf0';
 
@@ -129,7 +129,7 @@ async function blockDrop(page, out) {
 	};
 	await page.addInitScript(
 		(v) => {
-			localStorage.setItem('arcade:v1:block-drop:run', v);
+			localStorage.setItem('letemplay:v1:block-drop:run', v);
 		},
 		JSON.stringify({ v: 1, d: run })
 	);
@@ -146,7 +146,7 @@ async function hoopFlick(page, out) {
 	await page.getByRole('button', { name: 'Play', exact: true }).click();
 	await page.waitForTimeout(500);
 	const { s, P } = await toPage(page);
-	// A perfect flick with exact timestamps (see tests/arcade.ts).
+	// A perfect flick with exact timestamps (see tests/helpers.ts).
 	const cdp = await page.context().newCDPSession(page);
 	const t0 = Date.now() / 1000;
 	const at = (i) => P(360, 1150 - 2.6 * 16 * i);
@@ -263,6 +263,8 @@ try {
 		'src/app.html',
 		html.replace(/<!-- splash:start -->[\s\S]*<!-- splash:end -->/, block)
 	);
+	// Keep app.html in the project's formatting so `pnpm lint` stays clean.
+	execFileSync('pnpm', ['exec', 'prettier', '--write', 'src/app.html'], { stdio: 'ignore' });
 
 	// Game thumbnails, in a phone-shaped browser.
 	mkdirSync('static/thumbs', { recursive: true });

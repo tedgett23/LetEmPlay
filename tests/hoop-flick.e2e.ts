@@ -1,4 +1,4 @@
-import { expect, flickBasket, test, toPage } from './arcade';
+import { expect, flickBasket, test, toPage } from './helpers';
 
 test('flick the ball into the hoop', async ({ page }) => {
 	await page.goto('/play/hoop-flick');

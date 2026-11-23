@@ -1,6 +1,6 @@
 // All user-facing strings live here so we can localize later.
 export const t = {
-	appName: 'Arcade',
+	appName: 'LetEmPlay',
 	tagline: 'Free games. No ads. No pop-ups.',
 	play: 'Play',
 	continue: 'Continue',

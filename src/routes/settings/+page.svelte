@@ -52,6 +52,15 @@
 		{/each}
 	</ul>
 
+	<ul class="list more">
+		<li>
+			<a class="row" href={resolve('/parents')}>{t.forParents}<span aria-hidden="true">›</span></a>
+		</li>
+		<li>
+			<a class="row" href={resolve('/credits')}>{t.credits}<span aria-hidden="true">›</span></a>
+		</li>
+	</ul>
+
 	<div class="danger">
 		<HoldButton label={t.resetAll} onConfirm={eraseAll} />
 		{#if erased}<p role="status">{t.resetDone}</p>{/if}
@@ -80,6 +89,16 @@
 		font: inherit;
 		font-size: 20px;
 		font-weight: 700;
+	}
+	a.row {
+		text-decoration: none;
+	}
+	a.row span {
+		font-size: 30px;
+		opacity: 0.6;
+	}
+	.more {
+		margin-top: 28px;
 	}
 	.switch {
 		width: 60px;

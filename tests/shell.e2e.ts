@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { dragPiece, flickBasket, routes, scoreFirstMove, swipe, visit } from './arcade';
+import { dragPiece, flickBasket, routes, scoreFirstMove, swipe, visit } from './helpers';
 
 test('every route renders without outbound links or third-party traffic, including during play', async ({
 	page,

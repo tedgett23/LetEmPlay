@@ -1,4 +1,4 @@
-# Arcade (working name)
+# LetEmPlay
 
 Free, ad-free casual games for kids. Installable as a PWA and fully playable offline. No accounts,
 no purchases, no tracking, no data leaves the device.

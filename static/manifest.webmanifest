@@ -1,6 +1,6 @@
 {
-	"name": "Arcade",
-	"short_name": "Arcade",
+	"name": "LetEmPlay",
+	"short_name": "LetEmPlay",
 	"description": "Free games for kids. No ads, no pop-ups, no purchases. Works offline.",
 	"id": "/",
 	"start_url": "/",
