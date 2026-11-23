@@ -3,9 +3,22 @@
 // never need 'unsafe-eval' in the CSP. Import order matters: it must come first.
 import 'pixi.js/unsafe-eval';
 import { Application, Container } from 'pixi.js';
+import type { GameContext } from './types';
+import { palette } from './theme';
 import { devicePixelRatioCapped, fitLogical, observeSize, type Size } from './viewport';
 
 export * from 'pixi.js';
+
+/** The shell waits for ready; navigating away during renderer initialization is safe. */
+export function mountPixiStage(ctx: GameContext, size: Size, setup: (s: PixiStage) => void) {
+	let stage: PixiStage | undefined;
+	const ready = createPixiStage(ctx.container, size, palette.bg).then((s) => {
+		if (ctx.signal.aborted) return s.destroy();
+		stage = s;
+		setup(s);
+	});
+	return { ready, destroy: () => stage?.destroy() };
+}
 
 export interface PixiStage {
 	app: Application;
@@ -28,7 +41,6 @@ export async function createPixiStage(
 		antialias: true,
 		resolution: devicePixelRatioCapped(),
 		autoDensity: true,
-		resizeTo: container,
 		autoStart: false // games drive rendering from the kit loop
 	});
 	app.canvas.style.display = 'block';
@@ -40,9 +52,11 @@ export async function createPixiStage(
 
 	let fit = fitLogical({ width: 1, height: 1 }, logical);
 	const layout = (size: Size) => {
+		app.renderer.resize(size.width, size.height);
 		fit = fitLogical(size, logical);
 		root.scale.set(fit.scale);
 		root.position.set(fit.x, fit.y);
+		app.render(); // also redraw a paused game or an idle turn-based board
 	};
 	layout({ width: container.clientWidth, height: container.clientHeight });
 	const stopObserving = observeSize(container, layout);
@@ -54,8 +68,7 @@ export async function createPixiStage(
 		toLogical: (p) => ({ x: (p.x - fit.x) / fit.scale, y: (p.y - fit.y) / fit.scale }),
 		destroy() {
 			stopObserving();
-			// Don't destroy textures here: spritesheet textures are shared through Pixi's Assets
-			// cache. Games unload their own assets (Assets.unload) in destroy().
+			// sheetAndSounds unloads cached textures after the stage is destroyed.
 			app.destroy({ removeView: true }, { children: true });
 		}
 	};

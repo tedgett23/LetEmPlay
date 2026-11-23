@@ -4,9 +4,8 @@ import { asset } from '$app/paths';
 import type { GameDefinition, GameInstance } from '../../kit/types';
 import { createLoop } from '../../kit/loop';
 import { attachGestures } from '../../kit/input';
-import { loadSoundSet } from '../../kit/audio';
-import { palette } from '../../kit/theme';
-import { Assets, createPixiStage, type PixiStage, type Spritesheet } from '../../kit/pixi';
+import { Assets, mountPixiStage, type Spritesheet } from '../../kit/pixi';
+import { sheetAndSounds } from '../../kit/pixi-assets';
 import { applyMove, checkOver, isGameState, newGame, type GameState } from './logic/game';
 import { BlockDropView } from './render/view';
 import { H, inPause, slotAt, W } from './render/layout';
@@ -23,25 +22,9 @@ const blockDrop: GameDefinition = {
 	logicalSize: { width: W, height: H },
 	orientation: 'portrait',
 
-	async preload({ audio }, onProgress) {
-		let art = 0;
-		let sound = 0;
-		const report = () => onProgress(art * 0.6 + sound * 0.4);
-		await Promise.all([
-			Assets.load(SHEET, (p) => {
-				art = p;
-				report();
-			}),
-			loadSoundSet(audio, SFX, (p) => {
-				sound = p;
-				report();
-			})
-		]);
-	},
+	preload: sheetAndSounds(SHEET, SFX),
 
 	create(ctx): GameInstance {
-		let destroyed = false;
-		let stage: PixiStage | null = null;
 		let view: BlockDropView | null = null;
 		let detach: (() => void) | null = null;
 		const pending: { start: { continueSaved: boolean } | null } = { start: null };
@@ -53,12 +36,16 @@ const blockDrop: GameDefinition = {
 		let state: GameState = savedRun ?? newGame(randomSeed());
 		let ending = false; // game-over animation playing
 		let finished = true; // no active run (before start / after game over)
+		let paused = false;
 
 		const save = () => ctx.storage.set('run', state);
 
 		const loop = createLoop({
 			update: (dt) => view?.update(dt),
-			render: () => view?.render()
+			render: () => {
+				view?.render();
+				if (!view?.animating) loop.stop();
+			}
 		});
 
 		function begin(continueSaved: boolean) {
@@ -71,6 +58,7 @@ const blockDrop: GameDefinition = {
 			savedRun = null;
 			ending = false;
 			finished = false;
+			paused = false;
 			save();
 			view.setBest(ctx.storage.get<number>('best', 0));
 			view.showBoard(state.board);
@@ -125,13 +113,7 @@ const blockDrop: GameDefinition = {
 			return true;
 		}
 
-		const ready = (async () => {
-			const s = await createPixiStage(ctx.container, { width: W, height: H }, palette.bg);
-			if (destroyed) {
-				s.destroy();
-				return;
-			}
-			stage = s;
+		const stage = mountPixiStage(ctx, this.logicalSize, (s) => {
 			const sheet = Assets.get<Spritesheet>(SHEET);
 			view = new BlockDropView(s, sheet, () => ctx.settings.reducedMotion);
 			view.setBest(ctx.storage.get<number>('best', 0));
@@ -142,7 +124,7 @@ const blockDrop: GameDefinition = {
 
 			detach = attachGestures(ctx.container, {
 				onDragStart(p) {
-					if (!view || finished || ending || !loop.running) return;
+					if (!view || finished || ending || paused) return;
 					const l = s.toLogical(p);
 					if (inPause(l)) return;
 					const slot = slotAt(l);
@@ -151,19 +133,27 @@ const blockDrop: GameDefinition = {
 					if (!tp) return;
 					view.beginDrag(slot, tp, l);
 					view.moveDrag(l, state.board);
+					loop.start();
 					ctx.audio.play('pickup', { volume: 0.7 });
 				},
 				onDragMove(p) {
 					if (!view?.drag) return;
 					view.moveDrag(s.toLogical(p), state.board);
+					loop.start();
 				},
 				onDragEnd(p) {
 					if (!view?.drag) return;
 					const target = view.moveDrag(s.toLogical(p), state.board);
 					const slot = view.drag.slot;
+					loop.start();
 					if (target && tryPlace(slot, target.x, target.y)) return;
 					view.endDrag(state.board, true);
 					ctx.audio.play('return', { volume: 0.6 });
+				},
+				onDragCancel() {
+					if (!view?.drag) return;
+					view.cancelDrag(state.board);
+					loop.start();
 				},
 				onTap(p) {
 					if (inPause(s.toLogical(p)) && !finished) ctx.events.onRequestPause();
@@ -171,31 +161,30 @@ const blockDrop: GameDefinition = {
 			});
 
 			if (pending.start) begin(pending.start.continueSaved);
-		})();
+		});
 
 		return {
-			ready,
+			ready: stage.ready,
 			start(opts) {
 				begin(!!opts?.continueSaved);
 			},
 			hasSavedRun: () => savedRun !== null,
 			pause() {
+				paused = true;
 				if (view?.drag) view.cancelDrag(state.board);
 				loop.stop();
 				view?.render();
 			},
 			resume() {
+				paused = false;
 				if (view && (!finished || ending)) loop.start();
 			},
 			destroy() {
-				destroyed = true;
 				loop.stop();
 				detach?.();
 				view?.resetFx();
-				stage?.destroy();
-				stage = null;
+				stage.destroy();
 				view = null;
-				void Assets.unload(SHEET);
 			}
 		};
 	}

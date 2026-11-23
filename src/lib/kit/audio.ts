@@ -4,7 +4,7 @@ import type { GlobalSettings } from './settings.svelte';
 
 export interface AudioService {
 	/** Fetch + decode a same-origin file. Safe to call before unlock. */
-	load(name: string, url: string): Promise<void>;
+	load(name: string, url: string, signal: AbortSignal): Promise<void>;
 	play(name: string, opts?: { volume?: number; rate?: number }): void;
 	playMusic(name: string, volume?: number): void;
 	stopMusic(): void;
@@ -22,7 +22,7 @@ export function createAudio(settings: Readonly<GlobalSettings>): AudioService {
 	let music: GainNode | null = null;
 	let musicSrc: AudioBufferSourceNode | null = null;
 	const buffers = new Map<string, AudioBuffer>();
-	const pending = new Map<string, ArrayBuffer>();
+	const pending = new Map<string, { data: ArrayBuffer; signal: AbortSignal }>();
 
 	function ensure(): AudioContext | null {
 		if (ctx) return ctx;
@@ -44,10 +44,11 @@ export function createAudio(settings: Readonly<GlobalSettings>): AudioService {
 
 	async function decodePending() {
 		if (!ctx) return;
-		for (const [name, data] of pending) {
+		for (const [name, { data, signal }] of pending) {
 			pending.delete(name);
 			try {
-				buffers.set(name, await ctx.decodeAudioData(data));
+				const buffer = await ctx.decodeAudioData(data);
+				if (!signal.aborted) buffers.set(name, buffer);
 			} catch {
 				/* bad file — stay silent rather than crash */
 			}
@@ -64,17 +65,21 @@ export function createAudio(settings: Readonly<GlobalSettings>): AudioService {
 	if (typeof window !== 'undefined') window.addEventListener('pointerdown', unlock, true);
 
 	return {
-		async load(name, url) {
-			if (buffers.has(name) || pending.has(name)) return;
-			const data = await (await fetch(url)).arrayBuffer();
+		async load(name, url, signal) {
+			if (signal.aborted || buffers.has(name) || pending.has(name)) return;
+			const response = await fetch(url, { signal });
+			if (!response.ok) return;
+			const data = await response.arrayBuffer();
+			if (signal.aborted) return;
 			if (ctx) {
 				try {
-					buffers.set(name, await ctx.decodeAudioData(data));
+					const buffer = await ctx.decodeAudioData(data);
+					if (!signal.aborted) buffers.set(name, buffer);
 				} catch {
 					/* ignore */
 				}
 			} else {
-				pending.set(name, data);
+				pending.set(name, { data, signal });
 			}
 		},
 		play(name, opts = {}) {
@@ -153,11 +158,12 @@ function browserCanPlay(mime: string): boolean {
 export async function loadSoundSet(
 	audio: AudioService,
 	dir: string,
+	signal: AbortSignal,
 	onProgress?: (p: number) => void
 ): Promise<void> {
-	let index: { formats: string[]; sounds: string[] };
+	let index: { formats: string[]; sounds: string[]; aliases?: Record<string, string> };
 	try {
-		index = (await (await fetch(`${dir}/index.json`)).json()) as typeof index;
+		index = (await (await fetch(`${dir}/index.json`, { signal })).json()) as typeof index;
 	} catch {
 		return;
 	}
@@ -167,7 +173,7 @@ export async function loadSoundSet(
 	await Promise.all(
 		index.sounds.map(async (name) => {
 			try {
-				await audio.load(name, `${dir}/${name}.${fmt}`);
+				await audio.load(name, `${dir}/${index.aliases?.[name] ?? name}.${fmt}`, signal);
 			} catch {
 				/* stay silent rather than fail the game */
 			}

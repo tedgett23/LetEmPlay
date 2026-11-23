@@ -83,6 +83,7 @@ export class HoopFlickView {
 	private debugAge = Infinity;
 
 	private sprites = new Map<number, BallSprites>();
+	private live = new Set<number>();
 	private particles: Particle[] = [];
 
 	private scoreText: Text;
@@ -311,7 +312,8 @@ export class HoopFlickView {
 	}
 
 	private syncBalls(balls: Ball[], fire: boolean) {
-		const live = new Set<number>();
+		const live = this.live;
+		live.clear();
 		for (const b of balls) {
 			live.add(b.id);
 			let sp = this.sprites.get(b.id);

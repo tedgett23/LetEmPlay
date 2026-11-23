@@ -18,6 +18,7 @@ import {
 } from 'node:fs';
 import { dirname, join, resolve, sep } from 'node:path';
 import { crc32, inflateRawSync } from 'node:zlib';
+import { dedupeSounds } from './dedupe-sounds.mjs';
 
 const SRC = 'assets-src/kenney';
 const OUT = 'static/assets';
@@ -292,3 +293,4 @@ blockDrop();
 hoopFlick();
 await railDash();
 webSlinger();
+dedupeSounds(OUT);

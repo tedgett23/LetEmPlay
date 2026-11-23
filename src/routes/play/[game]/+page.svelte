@@ -20,7 +20,7 @@
 
 	let { data }: PageProps = $props();
 
-	type Phase = 'loading' | 'title' | 'playing' | 'paused' | 'over';
+	type Phase = 'loading' | 'error' | 'title' | 'playing' | 'paused' | 'over';
 	let phase = $state<Phase>('loading');
 	let progress = $state(0);
 	let best = $state(0);
@@ -29,6 +29,7 @@
 	let container: HTMLDivElement;
 	let game: GameInstance | null = null;
 	let leaving = false;
+	let retry = $state<() => void>();
 
 	let canContinue = $state(false);
 	let score = $state(0);
@@ -69,37 +70,61 @@
 		const audio = getAudio();
 		const haptics = getHaptics();
 		best = getBest(entry.id);
-		let destroyed = false;
+		let attempt: AbortController;
+		function dispose() {
+			game?.destroy();
+			game = null;
+			attempt.abort();
+			audio.unloadAll();
+		}
 
-		void (async () => {
-			const def = await entry.load();
-			await def.preload({ audio }, (p) => (progress = p));
-			if (destroyed) return;
-			game = def.create({
-				container,
-				audio,
-				haptics,
-				settings,
-				storage: createStorage(entry.id),
-				events: {
-					onScore(s) {
-						score = s;
-					},
-					onGameOver({ score }) {
-						const isNewBest = recordScore(entry.id, score);
-						best = getBest(entry.id);
-						result = { score, isNewBest };
-						phase = 'over';
-						requestPersistence();
-					},
-					onRequestPause: pause
-				}
-			});
-			await game.ready;
-			if (destroyed) return;
-			canContinue = game.hasSavedRun?.() ?? false;
-			phase = 'title';
-		})();
+		async function load() {
+			attempt = new AbortController();
+			const { signal } = attempt;
+			phase = 'loading';
+			progress = 0;
+			try {
+				const def = await entry.load();
+				if (signal.aborted) return;
+				await def.preload({ audio, signal }, (p) => {
+					if (!signal.aborted) progress = p;
+				});
+				if (signal.aborted) return;
+				game = def.create({
+					signal,
+					container,
+					audio,
+					haptics,
+					settings,
+					storage: createStorage(entry.id),
+					events: {
+						onScore(s) {
+							score = s;
+						},
+						onGameOver({ score }) {
+							const isNewBest = recordScore(entry.id, score);
+							best = getBest(entry.id);
+							result = { score, isNewBest };
+							phase = 'over';
+							requestPersistence();
+						},
+						onRequestPause: pause
+					}
+				});
+				await game.ready;
+				if (signal.aborted) return;
+				canContinue = game.hasSavedRun?.() ?? false;
+				phase = 'title';
+			} catch {
+				if (signal.aborted) return;
+				dispose();
+				phase = 'error';
+			}
+		}
+		retry = () => {
+			if (phase === 'error') void load();
+		};
+		void load();
 
 		const onVisibility = () => {
 			if (document.hidden) {
@@ -119,13 +144,10 @@
 		window.addEventListener('resize', onResize);
 
 		return () => {
-			destroyed = true;
 			document.removeEventListener('visibilitychange', onVisibility);
 			window.removeEventListener('pagehide', pause);
 			window.removeEventListener('resize', onResize);
-			game?.destroy();
-			game = null;
-			audio.unloadAll();
+			dispose();
 		};
 	});
 </script>
@@ -141,6 +163,12 @@
 		<Overlay label={t.loading}>
 			<h2>{data.title}</h2>
 			<progress max="1" value={progress}>{t.loading}</progress>
+		</Overlay>
+	{:else if phase === 'error'}
+		<Overlay label={t.loadFailed}>
+			<h2>{t.loadFailed}</h2>
+			<button class="btn btn-primary" onclick={retry}>{t.retry}</button>
+			<button class="btn" onclick={home}>{t.home}</button>
 		</Overlay>
 	{:else if phase === 'title'}
 		<Overlay label={data.title}>

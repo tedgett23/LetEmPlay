@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { classifySwipe, flickVelocity } from './input';
+import { attachGestures, classifySwipe, flickVelocity, type Flick } from './input';
+
+it('keeps the touch origin after the flick velocity window rolls over', () => {
+	const el = Object.assign(new EventTarget(), {
+		getBoundingClientRect: () => ({ left: 0, top: 0 })
+	});
+	let flick: Flick | undefined;
+	const detach = attachGestures(el as unknown as HTMLElement, { onFlick: (f) => (flick = f) });
+	const send = (name: string, y: number) =>
+		el.dispatchEvent(Object.assign(new Event(name), { pointerId: 1, clientX: 120, clientY: y }));
+	send('pointerdown', 800);
+	for (let y = 790; y >= 300; y -= 10) send('pointermove', y);
+	send('pointerup', 290);
+	expect(flick?.start).toMatchObject({ x: 120, y: 800 });
+	detach();
+});
 
 describe('classifySwipe', () => {
 	it('detects the four directions', () => {

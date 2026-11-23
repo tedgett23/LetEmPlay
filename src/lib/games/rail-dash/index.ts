@@ -34,7 +34,7 @@ const railDash: GameDefinition = {
 	logicalSize: { width: 720, height: 1280 },
 	orientation: 'portrait',
 
-	async preload({ audio }, onProgress) {
+	async preload({ audio, signal }, onProgress) {
 		let art = 0;
 		let sound = 0;
 		const report = () => onProgress(art * 0.8 + sound * 0.2);
@@ -43,7 +43,7 @@ const railDash: GameDefinition = {
 				art = p;
 				report();
 			}),
-			loadSoundSet(audio, SFX, (p) => {
+			loadSoundSet(audio, SFX, signal, (p) => {
 				sound = p;
 				report();
 			})

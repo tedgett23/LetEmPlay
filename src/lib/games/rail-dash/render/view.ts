@@ -388,6 +388,12 @@ export class RailDashView {
 	}
 
 	resetFx() {
+		// Entity IDs restart at 1 each run. Return the old run's objects to their typed pools.
+		this.seen.clear();
+		this.releaseUnseen();
+		for (const kind of ['train', 'moving'] as const) {
+			for (const obj of this.pools[kind]) delete obj.userData.fitted;
+		}
 		this.camLift = 0;
 		this.crashT = -1;
 		this.shake = 0;

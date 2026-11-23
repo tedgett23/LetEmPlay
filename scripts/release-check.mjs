@@ -10,6 +10,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { gzipSync } from 'node:zlib';
+import { runInNewContext } from 'node:vm';
 
 const BUILD = 'build';
 const MANIFEST = '.svelte-kit/output/client/.vite/manifest.json';
@@ -80,8 +81,29 @@ for (const g of games) {
 // ---- Precache size -------------------------------------------------------------------------
 
 const files = walk(BUILD).map((f) => relative(BUILD, f));
-const precached = files.filter((f) => !f.startsWith('splash/'));
-const precacheBytes = precached.reduce((n, f) => n + statSync(join(BUILD, f)).size, 0);
+// Capture addAll from the shipped worker rather than maintaining a second precache policy.
+const scope = 'https://build.invalid/';
+const handlers = new Map();
+let precached;
+runInNewContext(readFileSync(join(BUILD, 'service-worker.js'), 'utf8'), {
+	URL,
+	location: new URL('service-worker.js', scope),
+	self: { registration: { scope }, addEventListener: (name, cb) => handlers.set(name, cb) },
+	caches: { open: async () => ({ addAll: (paths) => (precached = paths) }) }
+});
+let installed;
+handlers.get('install')({ waitUntil: (p) => (installed = p) });
+await installed;
+if (!precached?.length) throw new Error('No precached files in worker install');
+const shipped = new Set(files);
+let precacheBytes = 0;
+for (const url of new Set(precached)) {
+	const path = new URL(url, scope).pathname.slice(1);
+	if (path.startsWith('splash/')) fail(`unnecessary splash in precache: ${path}`);
+	const file = [path, `${path}.html`, join(path, 'index.html')].find((f) => shipped.has(f));
+	if (file) precacheBytes += statSync(join(BUILD, file)).size;
+	else fail(`precache file missing: ${url}`);
+}
 rows.push(['offline download', precacheBytes, PRECACHE_BUDGET]);
 
 for (const [name, size, budget] of rows) {

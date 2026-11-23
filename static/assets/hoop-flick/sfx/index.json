@@ -15,5 +15,8 @@
 		"level",
 		"tick",
 		"buzzer"
-	]
+	],
+	"aliases": {
+		"buzzer": "../../block-drop/sfx/gameOver"
+	}
 }

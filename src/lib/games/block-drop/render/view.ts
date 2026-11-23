@@ -489,20 +489,28 @@ export class BlockDropView {
 			}
 		}
 
-		if (this.shake > 0 && !this.reducedMotion()) {
+		this.shake = this.reducedMotion() ? 0 : Math.max(0, this.shake - 60 * dt);
+		if (this.shake > 0) {
 			this.boardLayer.position.set(
 				(Math.random() - 0.5) * this.shake,
 				(Math.random() - 0.5) * this.shake
 			);
-			this.shake = Math.max(0, this.shake - 60 * dt);
 		} else {
-			this.shake = 0;
 			this.boardLayer.position.set(0, 0);
 		}
 	}
 
 	render() {
 		this.stage.app.render();
+	}
+
+	get animating() {
+		return (
+			this.tweens.busy ||
+			this.particles.length > 0 ||
+			this.shake > 0 ||
+			this.shownScore !== this.targetScore
+		);
 	}
 
 	/** Stop all in-flight animations and clear transient visuals (used on restart). */

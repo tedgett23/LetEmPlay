@@ -5,11 +5,11 @@ import type { GameDefinition, GameInstance } from '../../kit/types';
 import { createLoop } from '../../kit/loop';
 import { attachGestures } from '../../kit/input';
 import { loadSoundSet } from '../../kit/audio';
-import { palette } from '../../kit/theme';
-import { createPixiStage, type PixiStage } from '../../kit/pixi';
+import { mountPixiStage } from '../../kit/pixi';
 import { canThrow, newGame, step, throwBall, type GameEvent, type GameState } from './logic/game';
 import { H, inPause, inThrowZone, W } from './render/layout';
 import { HoopFlickView } from './render/view';
+import type { BallEvent } from './logic/physics';
 
 const SFX = asset('assets/hoop-flick/sfx/index.json').replace(/\/index\.json$/, '');
 /** Let "Time!" and the last bounce play before the shell shows the game-over card. */
@@ -20,13 +20,11 @@ const hoopFlick: GameDefinition = {
 	logicalSize: { width: W, height: H },
 	orientation: 'portrait',
 
-	async preload({ audio }, onProgress) {
-		await loadSoundSet(audio, SFX, onProgress);
+	async preload({ audio, signal }, onProgress) {
+		await loadSoundSet(audio, SFX, signal, onProgress);
 	},
 
 	create(ctx): GameInstance {
-		let destroyed = false;
-		let stage: PixiStage | null = null;
 		let view: HoopFlickView | null = null;
 		let detach: (() => void) | null = null;
 		let pendingStart = false;
@@ -34,6 +32,8 @@ const hoopFlick: GameDefinition = {
 		let state: GameState = newGame();
 		let playing = false; // a round is running (until the game-over card)
 		let overTimer = -1;
+		const events: GameEvent[] = [];
+		const ballEvents: BallEvent[] = [];
 
 		function play(e: GameEvent) {
 			const a = ctx.audio;
@@ -90,9 +90,9 @@ const hoopFlick: GameDefinition = {
 			update: (dt) => {
 				if (!view) return;
 				if (playing && overTimer < 0) {
-					for (const e of step(state, dt)) play(e);
+					for (const e of step(state, dt, events, ballEvents)) play(e);
 				} else if (overTimer >= 0) {
-					step(state, dt); // let the last balls bounce away
+					step(state, dt, events, ballEvents); // let the last balls bounce away
 					overTimer -= dt;
 					if (overTimer < 0) finish();
 				}
@@ -127,13 +127,7 @@ const hoopFlick: GameDefinition = {
 			loop.start();
 		}
 
-		const ready = (async () => {
-			const s = await createPixiStage(ctx.container, { width: W, height: H }, palette.bg);
-			if (destroyed) {
-				s.destroy();
-				return;
-			}
-			stage = s;
+		const stage = mountPixiStage(ctx, this.logicalSize, (s) => {
 			const v = new HoopFlickView(s, () => ctx.settings.reducedMotion);
 			view = v;
 			v.setBest(ctx.storage.get<number>('best', 0));
@@ -156,6 +150,7 @@ const hoopFlick: GameDefinition = {
 					onDragEnd() {
 						v.pressHand(false);
 					},
+					onDragCancel: () => v.pressHand(false),
 					onFlick(f) {
 						if (!playing || overTimer >= 0 || !loop.running) return;
 						const from = s.toLogical(f.start);
@@ -179,10 +174,10 @@ const hoopFlick: GameDefinition = {
 			);
 
 			if (pendingStart) begin();
-		})();
+		});
 
 		return {
-			ready,
+			ready: stage.ready,
 			start() {
 				begin();
 			},
@@ -195,12 +190,10 @@ const hoopFlick: GameDefinition = {
 				if (view && playing) loop.start();
 			},
 			destroy() {
-				destroyed = true;
 				loop.stop();
 				detach?.();
 				view?.destroy();
-				stage?.destroy();
-				stage = null;
+				stage.destroy();
 				view = null;
 			}
 		};

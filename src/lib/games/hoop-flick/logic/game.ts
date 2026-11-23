@@ -111,8 +111,13 @@ function onMiss(s: GameState, out: GameEvent[]) {
 }
 
 /** Advance the round by `dt` seconds. Returns what happened, for sounds and effects. */
-export function step(s: GameState, dt: number): GameEvent[] {
-	const out: GameEvent[] = [];
+export function step(
+	s: GameState,
+	dt: number,
+	out: GameEvent[] = [],
+	events: BallEvent[] = []
+): GameEvent[] {
+	out.length = 0;
 	if (s.over) return out;
 	s.elapsed += dt;
 
@@ -138,7 +143,6 @@ export function step(s: GameState, dt: number): GameEvent[] {
 
 	s.reload = Math.max(s.reload - dt, 0);
 
-	const events: BallEvent[] = [];
 	for (const ball of s.balls) {
 		events.length = 0;
 		stepBall(ball, h.x, dt, events);
@@ -148,7 +152,11 @@ export function step(s: GameState, dt: number): GameEvent[] {
 			else if (e.type === 'miss') onMiss(s, out);
 		}
 	}
-	s.balls = s.balls.filter((b) => !b.resolved || b.resolvedAge < RD.lingerSeconds);
+	let live = 0;
+	for (const b of s.balls) {
+		if (!b.resolved || b.resolvedAge < RD.lingerSeconds) s.balls[live++] = b;
+	}
+	s.balls.length = live;
 
 	if (s.timeUp && s.balls.every((b) => b.resolved)) {
 		s.over = true;

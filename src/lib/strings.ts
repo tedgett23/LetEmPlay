@@ -16,6 +16,8 @@ export const t = {
 	newBest: 'New best!',
 	comingSoon: 'Coming soon',
 	loading: 'Loading…',
+	loadFailed: 'Couldn’t load this game',
+	retry: 'Try again',
 	rotate: 'Turn your device upright to play',
 	settings: 'Settings',
 	forParents: 'For parents',

@@ -66,6 +66,7 @@ export interface GestureHandlers {
 	/** `p` includes `dragOffsetY` so the dragged item sits above the finger. */
 	onDragMove?(p: { x: number; y: number }): void;
 	onDragEnd?(p: { x: number; y: number }): void;
+	onDragCancel?(): void;
 	onTap?(p: { x: number; y: number }): void;
 }
 
@@ -90,8 +91,8 @@ export function attachGestures(
 	const offsetY = opts.dragOffsetY ?? 0;
 	let active: number | null = null;
 	let samples: Sample[] = [];
-	/** Index into samples where the current (not yet fired) swipe started. */
-	let swipeFrom = 0;
+	let start: Sample;
+	let swipeFrom: Sample;
 	let swiped = false;
 
 	const down = (e: PointerEvent) => {
@@ -99,8 +100,9 @@ export function attachGestures(
 		active = e.pointerId;
 		el.setPointerCapture?.(e.pointerId);
 		const p = local(el, e);
-		samples = [{ ...p, t: e.timeStamp }];
-		swipeFrom = 0;
+		start = { ...p, t: e.timeStamp };
+		samples = [start];
+		swipeFrom = start;
 		swiped = false;
 		h.onDragStart?.({ x: p.x, y: p.y + offsetY });
 	};
@@ -108,20 +110,17 @@ export function attachGestures(
 		if (e.pointerId !== active) return;
 		const p = local(el, e);
 		samples.push({ ...p, t: e.timeStamp });
-		if (samples.length > 32) {
-			samples.shift();
-			swipeFrom = Math.max(0, swipeFrom - 1);
-		}
+		if (samples.length > 32) samples.shift();
 		h.onDragMove?.({ x: p.x, y: p.y + offsetY });
 		if (opts.swipeOnMove && !swiped) {
-			const from = samples[swipeFrom]!;
+			const from = swipeFrom;
 			const dir = classifySwipe(p.x - from.x, p.y - from.y, e.timeStamp - from.t, swipeOpts);
 			if (dir) {
 				swiped = true;
 				h.onSwipe?.(dir);
 			} else if (e.timeStamp - from.t > swipeOpts.maxDurationMs) {
 				// Too slow to be a swipe: start measuring again from the latest point.
-				swipeFrom = samples.length - 1;
+				swipeFrom = samples[samples.length - 1]!;
 			}
 		}
 	};
@@ -130,7 +129,7 @@ export function attachGestures(
 		active = null;
 		const p = local(el, e);
 		samples.push({ ...p, t: e.timeStamp });
-		const first = samples[0]!;
+		const first = start;
 		const dx = p.x - first.x;
 		const dy = p.y - first.y;
 		const duration = e.timeStamp - first.t;
@@ -148,18 +147,19 @@ export function attachGestures(
 	const cancel = (e: PointerEvent) => {
 		if (e.pointerId !== active) return;
 		active = null;
-		const last = samples[samples.length - 1];
-		if (last) h.onDragEnd?.({ x: last.x, y: last.y + offsetY });
+		h.onDragCancel?.();
 	};
 
 	el.addEventListener('pointerdown', down);
 	el.addEventListener('pointermove', move);
 	el.addEventListener('pointerup', up);
 	el.addEventListener('pointercancel', cancel);
+	el.addEventListener('lostpointercapture', cancel);
 	return () => {
 		el.removeEventListener('pointerdown', down);
 		el.removeEventListener('pointermove', move);
 		el.removeEventListener('pointerup', up);
 		el.removeEventListener('pointercancel', cancel);
+		el.removeEventListener('lostpointercapture', cancel);
 	};
 }

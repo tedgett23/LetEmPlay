@@ -34,13 +34,14 @@ export function createLoop(cb: LoopCallbacks, hz = 60): Loop {
 	let last = 0;
 	let acc = 0;
 	let running = false;
+	const update = (dt: number) => cb.update(dt);
 
 	const frame = (now: number) => {
 		if (!running) return;
-		acc = advance(acc, (now - last) / 1000, step, (dt) => cb.update(dt));
+		acc = advance(acc, (now - last) / 1000, step, update);
 		last = now;
 		cb.render(acc / step);
-		raf = requestAnimationFrame(frame);
+		if (running) raf = requestAnimationFrame(frame);
 	};
 
 	return {

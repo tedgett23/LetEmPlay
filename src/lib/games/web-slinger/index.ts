@@ -6,9 +6,8 @@ import { asset } from '$app/paths';
 import type { GameDefinition, GameInstance } from '../../kit/types';
 import { createLoop } from '../../kit/loop';
 import { attachGestures } from '../../kit/input';
-import { loadSoundSet } from '../../kit/audio';
-import { palette } from '../../kit/theme';
-import { Assets, createPixiStage, type PixiStage, type Spritesheet } from '../../kit/pixi';
+import { Assets, mountPixiStage, type Spritesheet } from '../../kit/pixi';
+import { sheetAndSounds } from '../../kit/pixi-assets';
 import {
 	isSavedRun,
 	launch,
@@ -36,25 +35,9 @@ const webSlinger: GameDefinition = {
 	logicalSize: { width: W, height: H },
 	orientation: 'portrait',
 
-	async preload({ audio }, onProgress) {
-		let art = 0;
-		let sound = 0;
-		const report = () => onProgress(art * 0.6 + sound * 0.4);
-		await Promise.all([
-			Assets.load(SHEET, (p) => {
-				art = p;
-				report();
-			}),
-			loadSoundSet(audio, SFX, (p) => {
-				sound = p;
-				report();
-			})
-		]);
-	},
+	preload: sheetAndSounds(SHEET, SFX),
 
 	create(ctx): GameInstance {
-		let destroyed = false;
-		let stage: PixiStage | null = null;
 		let view: WebSlingerView | null = null;
 		let detach: (() => void) | null = null;
 		const pending: { start: { continueSaved: boolean } | null } = { start: null };
@@ -186,13 +169,7 @@ const webSlinger: GameDefinition = {
 			loop.start();
 		}
 
-		const ready = (async () => {
-			const s = await createPixiStage(ctx.container, { width: W, height: H }, palette.bg);
-			if (destroyed) {
-				s.destroy();
-				return;
-			}
-			stage = s;
+		const stage = mountPixiStage(ctx, this.logicalSize, (s) => {
 			const v = new WebSlingerView(
 				s,
 				Assets.get<Spritesheet>(SHEET),
@@ -225,6 +202,10 @@ const webSlinger: GameDefinition = {
 				onDragMove(p) {
 					v.setAim(lineTo(p));
 				},
+				onDragCancel() {
+					from = null;
+					v.setAim(null);
+				},
 				onDragEnd(p) {
 					const line = lineTo(p);
 					from = null;
@@ -247,10 +228,10 @@ const webSlinger: GameDefinition = {
 			});
 
 			if (pending.start) begin(pending.start.continueSaved);
-		})();
+		});
 
 		return {
-			ready,
+			ready: stage.ready,
 			start(opts) {
 				begin(!!opts?.continueSaved);
 			},
@@ -264,14 +245,11 @@ const webSlinger: GameDefinition = {
 				if (view && playing) loop.start();
 			},
 			destroy() {
-				destroyed = true;
 				loop.stop();
 				detach?.();
 				view?.destroy();
-				stage?.destroy();
-				stage = null;
+				stage.destroy();
 				view = null;
-				void Assets.unload(SHEET);
 			}
 		};
 	}

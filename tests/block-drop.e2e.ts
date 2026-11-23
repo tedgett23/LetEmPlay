@@ -8,6 +8,32 @@ const CELL = 80;
 const BOARD = { x: 40, y: 250 };
 const KEY = 'letemplay:v1:block-drop:run';
 
+test('cancelled drag returns the piece without committing the move', async ({ page }) => {
+	await page.goto('/play/block-drop');
+	await page.getByRole('button', { name: 'Play', exact: true }).click();
+	const point = await toPage(page);
+	const from = point(360, 1050);
+	const to = point(360, 900);
+	await page.mouse.move(from.x, from.y);
+	await page.mouse.down();
+	await page.locator('.stage').evaluate((el) => {
+		el.addEventListener(
+			'pointermove',
+			(e) => {
+				el.dispatchEvent(
+					new PointerEvent('pointercancel', { pointerId: (e as PointerEvent).pointerId })
+				);
+			},
+			{ once: true }
+		);
+	});
+	await page.mouse.move(to.x, to.y);
+	await page.mouse.up();
+	await expect(page.locator('.host')).toHaveAttribute('data-score', '0');
+	await dragPiece(page, 1, 360, 900);
+	await expect(page.locator('.host')).toHaveAttribute('data-score', /^[1-9]\d*$/);
+});
+
 /** Drag the piece in tray `slot` so a 1×1 piece lands on board cell (cx, cy). */
 async function dragDotTo(page: Page, slot: number, cx: number, cy: number) {
 	const cellCenter = { x: BOARD.x + cx * CELL + CELL / 2, y: BOARD.y + cy * CELL + CELL / 2 };

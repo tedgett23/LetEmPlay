@@ -11,7 +11,7 @@ const PRECACHE = [
 	...immutable.map((f) => f.path),
 	// iOS launch screens are only fetched when the app is added to the home screen; caching
 	// all 17 device sizes on every device would waste space.
-	...assets.map((f) => f.path).filter((p) => !p.includes('/splash/')),
+	...assets.map((f) => f.path).filter((p) => !p.startsWith('splash/')),
 	...prerendered.map((f) => f.path)
 ].map((p) => new URL(p, self.registration.scope).pathname);
 
@@ -27,7 +27,7 @@ self.addEventListener('activate', (event) => {
 	event.waitUntil(
 		(async () => {
 			for (const key of await caches.keys()) {
-				if (key !== CACHE) await caches.delete(key);
+				if (key.startsWith('letemplay-') && key !== CACHE) await caches.delete(key);
 			}
 			await self.clients.claim();
 		})()

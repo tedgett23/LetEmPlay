@@ -13,6 +13,8 @@ export interface GameResult {
 }
 
 export interface GameContext {
+	/** Aborted when this load attempt ends, including navigation and failed setup. */
+	signal: AbortSignal;
 	/** The game creates its own canvas inside this element. */
 	container: HTMLElement;
 	/** Respects global mute settings. */
@@ -56,6 +58,9 @@ export interface GameDefinition {
 	logicalSize: { width: number; height: number };
 	orientation: 'portrait';
 	/** Download/decode assets. Called before create(). */
-	preload(ctx: Pick<GameContext, 'audio'>, onProgress: (p: number) => void): Promise<void>;
+	preload(
+		ctx: Pick<GameContext, 'audio' | 'signal'>,
+		onProgress: (p: number) => void
+	): Promise<void>;
 	create(ctx: GameContext): GameInstance;
 }
