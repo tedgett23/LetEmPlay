@@ -120,22 +120,29 @@ export function buildCourse(l: Level, index: number, mat: MeshLambertMaterial) {
 	} else if (theme === 1) {
 		b.add(tube, 0xf7db98, tx, 92, tz, 57, 184, 57);
 		b.add(cone, 0x9e5947, tx, 202, tz, 64, 52, 64);
+		// The axle projects beyond the roof. Join each spar to its sail end-to-end;
+		// layering the sail over a full-length spar left their front faces coplanar.
+		const rotorZ = tz + 74;
+		b.add(tube, 0x734a38, tx, 154, tz + 63, 9, 38, 9, Math.PI / 2);
 		for (let k = 0; k < 4; k++) {
 			const a = 0.54 + (k * Math.PI) / 2,
 				dx = Math.sin(a),
 				dy = Math.cos(a);
-			b.beam(0x734a38, tx, 154, tz + 49, tx + dx * 108, 154 + dy * 108, tz + 49, 6);
-			b.add(box, 0xffecd1, tx + dx * 77, 154 + dy * 77, tz + 50, 18, 62, 4, 0, 0, -a);
+			// Radius 6–46 is wood; radius 46–108 is canvas.
+			b.add(box, 0x734a38, tx + dx * 26, 154 + dy * 26, rotorZ, 6, 40, 6, 0, 0, -a);
+			b.add(box, 0xffecd1, tx + dx * 77, 154 + dy * 77, rotorZ, 18, 62, 4, 0, 0, -a);
 		}
+		// Raised beds: tops at +12, bottoms at -22. This clears both the near meadow
+		// (top -1) and the far field (top -18), even at a grazing camera angle.
 		for (let k = 0; k < 20; k++)
 			b.add(
 				box,
 				k % 2 ? 0xf2bc55 : 0xd99c45,
 				gx - 850 + k * 92,
-				-9,
+				-5,
 				gz - 720,
-				85,
-				16,
+				80,
+				34,
 				490,
 				0,
 				0.22
