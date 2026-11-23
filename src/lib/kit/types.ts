@@ -5,7 +5,7 @@ import type { GameStorage } from './storage';
 import type { HapticsService } from './haptics';
 import type { GlobalSettings } from './settings.svelte';
 
-export type GameId = 'block-drop' | 'hoop-flick' | 'rail-dash' | 'web-slinger';
+export type GameId = 'block-drop' | 'hoop-flick' | 'rail-dash' | 'web-slinger' | 'doodle-cove';
 
 export interface GameResult {
 	score: number;

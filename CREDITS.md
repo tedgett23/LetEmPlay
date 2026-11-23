@@ -5,17 +5,19 @@ Source zips live in `assets-src/kenney/`, and `pnpm assets` builds what ships in
 locally. Keep this in sync with `src/lib/credits.ts`, which the in-app Credits
 page shows as plain text.
 
-| Pack       | Author | License | Downloaded | Used in |
-| ---------- | ------ | ------- | ---------- | ------- |
-| Puzzle Pack 1.1 | Kenney | CC0 1.0 | 2026-11-22 | Block Drop |
-| Interface Sounds 1.0 | Kenney | CC0 1.0 | 2026-11-22 | Block Drop, Hoop Flick, Rail Dash, Web Slinger |
-| Impact Sounds 1.0 | Kenney | CC0 1.0 | 2026-11-22 | Hoop Flick, Rail Dash, Web Slinger |
-| Train Kit | Kenney | CC0 1.0 | 2026-11-22 | Rail Dash |
-| City Kit (Commercial) 2.1 | Kenney | CC0 1.0 | 2026-11-22 | Rail Dash |
-| Animated Characters: Protagonists | Kenney | CC0 1.0 | 2026-11-22 | Rail Dash, Web Slinger |
+| Pack                              | Author | License | Downloaded | Used in                                        |
+| --------------------------------- | ------ | ------- | ---------- | ---------------------------------------------- |
+| Puzzle Pack 1.1                   | Kenney | CC0 1.0 | 2026-11-22 | Block Drop                                     |
+| Interface Sounds 1.0              | Kenney | CC0 1.0 | 2026-11-22 | Block Drop, Hoop Flick, Rail Dash, Web Slinger |
+| Impact Sounds 1.0                 | Kenney | CC0 1.0 | 2026-11-22 | Hoop Flick, Rail Dash, Web Slinger             |
+| Train Kit                         | Kenney | CC0 1.0 | 2026-11-22 | Rail Dash                                      |
+| City Kit (Commercial) 2.1         | Kenney | CC0 1.0 | 2026-11-22 | Rail Dash                                      |
+| Animated Characters: Protagonists | Kenney | CC0 1.0 | 2026-11-22 | Rail Dash, Web Slinger                         |
 
 Sports Pack (Kenney, CC0 1.0, downloaded 2026-11-22) is in `assets-src/` but unused: its balls
 are 18 px, so Hoop Flick draws its ball, hoop and court in code.
+
+Doodle Cove's ten coloring pages are original path drawings. The game uses no third-party art packs.
 
 ## Software
 

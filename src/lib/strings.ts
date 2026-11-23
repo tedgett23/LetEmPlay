@@ -27,7 +27,56 @@ export const t = {
 	music: 'Music',
 	haptics: 'Vibration',
 	reducedMotion: 'Less motion',
-	resetAll: 'Hold to erase all scores',
-	resetDone: 'All scores erased',
+	resetAll: 'Hold to erase drawings, scores and settings',
+	resetDone: 'All game data erased',
 	updated: 'Updated!'
+} as const;
+
+export const doodle = {
+	title: 'Doodle Cove',
+	blurb: 'Draw, paint and fill a coloring book',
+	choose: 'What will you make?',
+	free: 'Free-style',
+	book: 'Coloring book',
+	freeHint: 'Start with blank paper',
+	bookHint: 'Pick a picture to color',
+	pages: 'Pick a page',
+	modes: 'Modes',
+	gallery: 'Pages',
+	pause: 'Pause',
+	paper: 'Drawing paper',
+	pen: 'Pen',
+	marker: 'Marker',
+	eraser: 'Eraser',
+	fill: 'Fill',
+	undo: 'Undo',
+	clear: 'Clear',
+	confirm: 'Clear this drawing?',
+	keep: 'Keep drawing',
+	erase: 'Clear drawing',
+	unsaved: 'Storage is full or unavailable. This drawing is only saved for this visit.',
+	colors: [
+		'Berry',
+		'Orange',
+		'Sunshine',
+		'Leaf',
+		'Teal',
+		'Sky',
+		'Violet',
+		'Pink',
+		'Cocoa',
+		'Midnight'
+	],
+	scenes: {
+		balloon: 'Cloud cruiser',
+		turtle: 'Tide pool turtle',
+		cottage: 'Mushroom cottage',
+		rocket: 'Moon mail',
+		flower: 'Garden party',
+		boat: 'Little sailboat',
+		butterfly: 'Patchwork wings',
+		castle: 'Sandcastle bay',
+		robot: 'Pocket robot',
+		treat: 'Scoops of summer'
+	}
 } as const;

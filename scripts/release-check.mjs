@@ -20,6 +20,7 @@ const BUDGETS = {
 	'block-drop': 250 * KB,
 	'hoop-flick': 300 * KB,
 	'rail-dash': 350 * KB,
+	'doodle-cove': 25 * KB,
 	'web-slinger': 250 * KB
 };
 const PRECACHE_BUDGET = 25 * KB * KB;

@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import {
+	colorFirstPage,
 	dragPiece,
 	flickBasket,
 	routes,
@@ -62,6 +63,11 @@ test('every route renders without outbound links or third-party traffic, includi
 			const until = Date.now() + 10_000;
 			await flickBasket(page);
 			// Deliberate observation window for delayed network activity.
+			await page.waitForTimeout(Math.max(0, until - Date.now()));
+		}
+		if (path === '/play/doodle-cove') {
+			const until = Date.now() + 10_000;
+			await colorFirstPage(page);
 			await page.waitForTimeout(Math.max(0, until - Date.now()));
 		}
 	}

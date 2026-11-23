@@ -1,5 +1,6 @@
 // The list of games shown on the home screen. Each game is lazy-loaded as its own chunk.
 import type { GameDefinition, GameId } from '../kit/types';
+import { doodle } from '../strings';
 
 export interface GameEntry {
 	id: GameId;
@@ -43,6 +44,14 @@ export const games: GameEntry[] = [
 		color: '#3dd68c',
 		status: 'ready',
 		load: () => import('./web-slinger').then((m) => m.default)
+	},
+	{
+		id: 'doodle-cove',
+		title: doodle.title,
+		blurb: doodle.blurb,
+		color: '#ffa9c5',
+		status: 'ready',
+		load: () => import('./doodle-cove').then((m) => m.default)
 	}
 ];
 

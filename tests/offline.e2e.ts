@@ -1,5 +1,13 @@
 import { expect, test } from '@playwright/test';
-import { flickBasket, routes, scoreFirstMove, climbFirstLevel, swipe, visit } from './helpers';
+import {
+	colorFirstPage,
+	flickBasket,
+	routes,
+	scoreFirstMove,
+	climbFirstLevel,
+	swipe,
+	visit
+} from './helpers';
 
 // After the first load, everything works with no network.
 test('works fully offline after first visit', async ({ page, context }) => {
@@ -18,6 +26,9 @@ test('works fully offline after first visit', async ({ page, context }) => {
 	await context.setOffline(true);
 
 	for (const [path, heading] of routes) await visit(page, path, heading);
+	await page.goto('/');
+	await page.getByRole('link', { name: /Doodle Cove/ }).click();
+	await colorFirstPage(page);
 
 	// Navigate client-side from home into the game and play it offline.
 	await page.goto('/');

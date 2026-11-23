@@ -18,8 +18,8 @@
 		<li><strong>No purchases.</strong> Everything is free and fully unlocked for everyone.</li>
 		<li><strong>No accounts.</strong> Nobody signs up or logs in.</li>
 		<li>
-			<strong>No data collected.</strong> No analytics or tracking. Scores and settings stay on this device
-			and are never sent anywhere.
+			<strong>No data collected.</strong> No analytics or tracking. Drawings, scores and settings stay
+			on this device and are never sent anywhere.
 		</li>
 		<li><strong>No links out.</strong> Kids can't tap their way to another website.</li>
 		<li><strong>Works offline</strong> after the first visit, including in airplane mode.</li>

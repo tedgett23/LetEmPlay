@@ -19,8 +19,35 @@ export const routes = [
 	['/play/block-drop', 'Block Drop'],
 	['/play/hoop-flick', 'Hoop Flick'],
 	['/play/rail-dash', 'Rail Dash'],
-	['/play/web-slinger', 'Web Slinger']
+	['/play/web-slinger', 'Web Slinger'],
+	['/play/doodle-cove', 'Doodle Cove']
 ] as const;
+
+/** Sample the actual ink layer in design coordinates, independent of CSS size and DPR. */
+export function inkAt(page: Page, x: number, y: number) {
+	return page.locator('canvas[aria-label="Drawing paper"]').evaluate(
+		(node, [x, y]) => {
+			const c = node as HTMLCanvasElement;
+			return Array.from(
+				c.getContext('2d')!.getImageData((x! * c.width) / 400, (y! * c.height) / 400, 1, 1).data
+			);
+		},
+		[x, y]
+	);
+}
+
+export async function colorFirstPage(page: Page) {
+	await page.getByRole('button', { name: 'Play', exact: true }).click();
+	await page.getByRole('button', { name: /Coloring book/ }).click();
+	await page.getByRole('button', { name: 'Cloud cruiser' }).click();
+	await page.getByRole('button', { name: 'Berry', exact: true }).click();
+	const paper = page.locator('canvas[aria-label="Drawing paper"]');
+	const box = (await paper.boundingBox())!;
+	await paper.click({ position: { x: (box.width * 195) / 400, y: (box.height * 140) / 400 } });
+	await expect.poll(() => inkAt(page, 195, 140)).toEqual([227, 71, 87, 255]);
+	// A point on the opposite side of the stripe must stay unpainted.
+	expect(await inkAt(page, 117, 139)).toEqual([0, 0, 0, 0]);
+}
 
 export async function visit(page: Page, path: string, heading: string) {
 	const response = await page.goto(path);

@@ -3,6 +3,9 @@
 Free, ad-free casual games for kids. Installable as a PWA and fully playable offline. No accounts,
 no purchases, no tracking, no data leaves the device.
 
+**Doodle Cove** is the drawing studio: use a pen, marker or eraser on blank paper, or pick one of ten
+original coloring pages and tap a shape to fill it. The pad and each book page save separately on the device.
+
 - **Agent and contributor guide:** [`CLAUDE.md`](CLAUDE.md)
 - **Development and testing:** [`development.md`](development.md) (`make help` for commands)
 

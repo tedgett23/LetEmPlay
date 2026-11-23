@@ -33,16 +33,17 @@ Open the reported zip with `pnpm exec playwright show-trace <path-to-trace.zip>`
 
 Run on each device: a real iPhone (iOS 16.4+), a 2021-era budget Android phone (Chrome), and an iPad. Install to the home screen first, then turn on airplane mode.
 
-| Check | How | Pass when |
-| --- | --- | --- |
-| Install | Share → Add to Home Screen (iOS); install prompt or menu (Android) | Icon looks right, launch screen shows, opens full screen |
-| Offline | Airplane mode, cold launch, play each game | Every game loads and plays; no error pages |
-| Audio | First tap in each game | Sounds start on the first touch; Settings mute works |
-| Touch | Block Drop drag on a small phone; Hoop Flick flicks; Rail Dash swipes | Pieces land where aimed; flicks feel consistent; no missed or doubled swipes |
-| Background | Switch apps mid-game, come back | Game is paused; Hoop Flick's clock didn't run; resume works |
-| Rotation | Turn the device sideways mid-game | Game pauses and asks to turn back; resumes cleanly |
-| Safe areas | Notch, Dynamic Island, home bar, iPad split | Nothing important is under a notch or the home bar |
-| Back gesture | Swipe back / Android back mid-game | Pauses instead of leaving |
-| Performance | Rail Dash for 5+ minutes; Block Drop long game | Smooth; with remote DevTools, memory flattens instead of climbing |
-| Scores | Set a best, close the app, reopen | Best shows on the home card; "Hold to erase" clears all |
-| Privacy | Parents page; remote DevTools Network tab while playing | Only this site's own files are requested |
+| Check        | How                                                                             | Pass when                                                                                     |
+| ------------ | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Install      | Share → Add to Home Screen (iOS); install prompt or menu (Android)              | Icon looks right, launch screen shows, opens full screen                                      |
+| Offline      | Airplane mode, cold launch, play each game                                      | Every game loads and plays; no error pages                                                    |
+| Audio        | First tap in each game                                                          | Sounds start on the first touch; Settings mute works                                          |
+| Touch        | Block Drop drag on a small phone; Hoop Flick flicks; Rail Dash swipes           | Pieces land where aimed; flicks feel consistent; no missed or doubled swipes                  |
+| Drawing      | Fill a book shape, draw across its outline, erase, then reopen the page offline | Ink follows the finger, printed lines stay intact, and each drawing is restored independently |
+| Background   | Switch apps mid-game, come back                                                 | Game is paused; Hoop Flick's clock didn't run; resume works                                   |
+| Rotation     | Turn the device sideways mid-game                                               | Game pauses and asks to turn back; resumes cleanly                                            |
+| Safe areas   | Notch, Dynamic Island, home bar, iPad split                                     | Nothing important is under a notch or the home bar                                            |
+| Back gesture | Swipe back / Android back mid-game                                              | Pauses instead of leaving                                                                     |
+| Performance  | Rail Dash for 5+ minutes; Block Drop long game                                  | Smooth; with remote DevTools, memory flattens instead of climbing                             |
+| Scores       | Set a best, close the app, reopen                                               | Best shows on the home card; "Hold to erase" clears all                                       |
+| Privacy      | Parents page; remote DevTools Network tab while playing                         | Only this site's own files are requested                                                      |

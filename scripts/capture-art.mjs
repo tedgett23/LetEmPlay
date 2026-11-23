@@ -6,6 +6,7 @@
 import { execFileSync, spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { chromium, devices } from '@playwright/test';
+import { doodleThumbnail } from './doodle-thumbnail.mjs';
 
 const PORT = 4176;
 const ORIGIN = `http://localhost:${PORT}`;
@@ -293,11 +294,11 @@ try {
 
 	// Game thumbnails, in a phone-shaped browser.
 	mkdirSync('static/thumbs', { recursive: true });
-	for (const shot of [blockDrop, hoopFlick, railDash, webSlinger]) {
+	for (const shot of [blockDrop, hoopFlick, railDash, webSlinger, doodleThumbnail]) {
 		// 1.5× is plenty for a ~200 px card and keeps each image small.
 		const ctx = await browser.newContext({ ...devices['Pixel 7'], deviceScaleFactor: 1.5 });
 		const page = await ctx.newPage();
-		await shot(page, 'static/thumbs');
+		await shot(page, 'static/thumbs', ORIGIN);
 		await ctx.close();
 	}
 	await browser.close();
