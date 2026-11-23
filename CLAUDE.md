@@ -12,8 +12,8 @@ Targets that still apply to every change:
   switching games repeatedly doesn't grow memory.
 - Gzipped JS budgets: shell < 80 KB, Block Drop < 250 KB, Hoop Flick < 300 KB, Rail Dash < 350 KB;
   offline download < 25 MB. `pnpm release-check` enforces these.
-- Service worker: precache everything, cache-first, no "update available" pop-ups (the new
-  version takes over on the next cold launch).
+- Service worker: precache the whole release before activation, serve cache-first, and silently
+  refresh only the home screen on version changes. Keep active games uninterrupted.
 
 ## Commands
 

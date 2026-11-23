@@ -19,6 +19,12 @@ pnpm dev
 (HTTPS is needed for the service worker). If the host allows custom headers, mirror the CSP from
 `vite.config.ts` as an HTTP header too.
 
+The home screen checks for updates when opened, brought back to the foreground, or reconnected.
+Once the new build is fully cached, the home screen refreshes itself. Games already in progress
+stay open. If the site is unreachable, the last installed build still works offline.
+Deploy the complete `build/` together. Allow HTTP revalidation for HTML and `service-worker.js`;
+long-lived immutable caching is appropriate for `_app/immutable/`.
+
 ## Principles
 
 These are the rules the project is built on. Changes must keep all of them.

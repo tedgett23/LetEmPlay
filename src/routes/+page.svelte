@@ -3,12 +3,14 @@
 	import { asset, resolve } from '$app/paths';
 	import { games } from '#lib/games/registry.ts';
 	import { getBest } from '#lib/kit/scores.ts';
+	import { watchHomeUpdates } from '#lib/kit/home-updates.ts';
 	import { t } from '#lib/strings.ts';
 
 	let bests = $state<Record<string, number>>({});
 
 	onMount(() => {
 		bests = Object.fromEntries(games.map((g) => [g.id, getBest(g.id)]));
+		return watchHomeUpdates();
 	});
 </script>
 

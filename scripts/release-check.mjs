@@ -88,8 +88,13 @@ const handlers = new Map();
 let precached;
 runInNewContext(readFileSync(join(BUILD, 'service-worker.js'), 'utf8'), {
 	URL,
+	Request,
 	location: new URL('service-worker.js', scope),
-	self: { registration: { scope }, addEventListener: (name, cb) => handlers.set(name, cb) },
+	self: {
+		registration: { scope },
+		skipWaiting: async () => {},
+		addEventListener: (name, cb) => handlers.set(name, cb)
+	},
 	caches: { open: async () => ({ addAll: (paths) => (precached = paths) }) }
 });
 let installed;
@@ -98,7 +103,7 @@ await installed;
 if (!precached?.length) throw new Error('No precached files in worker install');
 const shipped = new Set(files);
 let precacheBytes = 0;
-for (const url of new Set(precached)) {
+for (const url of new Set(precached.map((req) => (typeof req === 'string' ? req : req.url)))) {
 	const path = new URL(url, scope).pathname.slice(1);
 	if (path.startsWith('splash/')) fail(`unnecessary splash in precache: ${path}`);
 	const file = [path, `${path}.html`, join(path, 'index.html')].find((f) => shipped.has(f));
