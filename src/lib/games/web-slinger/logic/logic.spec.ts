@@ -147,6 +147,28 @@ describe('drawing a line', () => {
 	});
 });
 
+describe('crates', () => {
+	it('flying through a crate smashes it and pops out coins to grab', () => {
+		const s = startLevel(1); // "Catch a robber": a crate on the left ledge at 12 m
+		const c = s.crates[0]!;
+		const coinsBefore = s.coins.length;
+		s.hero = { ...s.hero, mode: 'cling', x: W - TUNING.hero.radius, y: c.y + 0.8, ledge: -1 };
+		const es = drawTo(s, { x: 0, y: c.y + 0.8 }); // straight across, just over the ledge
+		expect(types(es)).toContain('smash');
+		expect(c.broken).toBe(true);
+		expect(s.coins.length).toBe(coinsBefore + TUNING.crate.coins);
+		expect(s.score).toBeGreaterThanOrEqual(TUNING.scoring.crate);
+	});
+
+	it('standing next to a crate leaves it alone', () => {
+		const s = startLevel(1);
+		const c = s.crates[0]!;
+		s.hero = { ...s.hero, mode: 'stand', x: c.x + 0.5, y: c.y + 0.45, ledge: 2 };
+		run(s, 1);
+		expect(c.broken).toBe(false);
+	});
+});
+
 describe('hazards and robbers', () => {
 	it('spikes bounce you up and cost a heart', () => {
 		const s = startLevel(3); // "Watch your step": spikes at the far end of the first ledge

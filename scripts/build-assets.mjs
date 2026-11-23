@@ -262,7 +262,7 @@ async function railDash() {
 }
 
 // ---- Web Slinger -------------------------------------------------------------------------------
-// Drawn in code; sounds only.
+// Scenery drawn in code; characters rendered from the Kenney 3D model; sounds.
 
 function webSlinger() {
 	buildSfx(join(OUT, 'web-slinger', 'sfx'), {
@@ -275,8 +275,15 @@ function webSlinger() {
 		splash: 'impact-sounds/Audio/impactSoft_medium_002.ogg',
 		oops: 'interface-sounds/Audio/error_005.ogg',
 		complete: 'interface-sounds/Audio/confirmation_004.ogg',
-		gameOver: 'interface-sounds/Audio/bong_001.ogg'
+		gameOver: 'interface-sounds/Audio/bong_001.ogg',
+		smash: 'impact-sounds/Audio/impactWood_medium_002.ogg'
 	});
+	// Characters: rendered from the 3D model into a sprite sheet (needs the test browser).
+	try {
+		execFileSync('node', ['scripts/render-sprites.mjs'], { stdio: 'inherit' });
+	} catch {
+		console.warn('! could not render Web Slinger characters (run `pnpm test:e2e:install`?)');
+	}
 	console.log('web-slinger assets written');
 }
 

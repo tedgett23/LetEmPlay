@@ -8,6 +8,7 @@ import {
 	Sprite,
 	Text,
 	TilingSprite,
+	type Spritesheet,
 	type Texture
 } from '../../../kit/pixi';
 import type { PixiStage } from '../../../kit/pixi';
@@ -46,6 +47,16 @@ const colors = {
 const wx = (x: number) => x * S;
 const wy = (y: number) => -y * S;
 const TH = TUNING.ledge.thickness;
+/** Character sprites: 256 px frames covering 2.2 m of the 1.7 m-tall model (render-sprites). */
+const FRAME_M = 2.2;
+/** Drawn about 20% bigger than their hitboxes: easier to see, and near misses stay misses. */
+const LOOK = 1.2;
+const ROBBER_SCALE = ((S * FRAME_M) / 256) * LOOK;
+const HERO_SCALE = ROBBER_SCALE * (1.5 / 1.7); // a touch smaller and quicker-looking
+/** Feet sit this far down the frame (the model's feet are 0.85 m below the frame's middle). */
+const FEET = 0.5 + 0.85 / FRAME_M;
+/** The hero's body middle is this far above the hero's centre (metres). */
+const HERO_BODY_OFFSET = 0.85 * (1.5 / 1.7) * LOOK - TUNING.hero.radius;
 
 interface Particle {
 	sprite: Sprite;
@@ -59,7 +70,7 @@ interface Particle {
 
 interface RobberSprite {
 	root: Container;
-	body: Graphics;
+	body: Sprite;
 	balloon: Graphics;
 	web: Graphics;
 	stars: Container;
@@ -104,7 +115,13 @@ export class WebSlingerView {
 	private robbersLayer = new Container();
 	private robbers: RobberSprite[] = [];
 	private dynamic = new Graphics(); // web line, shots, balloons
-	private hero = new Graphics();
+	private hero = new Graphics(); // kept for the hit blink layer order; the hero is a sprite
+	private heroSprite: Sprite;
+	private frames: Record<string, Texture[]> = {};
+	private cratesLayer = new Container();
+	private crateTex: Texture;
+	private plankTex: Texture;
+	private crateSprites: Sprite[] = [];
 	private fx = new Container();
 	private particles: Particle[] = [];
 
@@ -128,8 +145,20 @@ export class WebSlingerView {
 
 	constructor(
 		private stage: PixiStage,
+		sheet: Spritesheet,
 		private reducedMotion: () => boolean
 	) {
+		// Characters are pre-rendered from the Kenney 3D model (scripts/render-sprites.mjs).
+		for (const name of ['hero-idle', 'hero-jump', 'hero-fly', 'robber-idle', 'robber-throw']) {
+			this.frames[name] = Object.keys(sheet.textures)
+				.filter((k) => k.startsWith(name + '-'))
+				.sort()
+				.map((k) => sheet.textures[k]!);
+		}
+		this.heroSprite = new Sprite(this.frames['hero-idle']![0]);
+		this.heroSprite.anchor.set(0.5);
+		this.crateTex = this.bake(drawCrate());
+		this.plankTex = this.bake(new Graphics().roundRect(-14, -4, 28, 8, 3).fill(0xb7793f));
 		this.coinTex = this.bake(
 			new Graphics()
 				.circle(0, 0, 24)
@@ -174,8 +203,10 @@ export class WebSlingerView {
 			this.levelLayer,
 			this.coinsLayer,
 			this.robbersLayer,
+			this.cratesLayer,
 			this.dynamic,
 			this.hero,
+			this.heroSprite,
 			this.fx
 		);
 
@@ -250,11 +281,22 @@ export class WebSlingerView {
 			return sp;
 		});
 
+		for (const c of this.cratesLayer.removeChildren()) c.destroy();
+		this.crateSprites = s.crates.map((c) => {
+			const sp = new Sprite(this.crateTex);
+			sp.anchor.set(0.5, 1);
+			sp.position.set(wx(c.x), wy(c.y));
+			this.cratesLayer.addChild(sp);
+			return sp;
+		});
+
 		for (const c of this.robbersLayer.removeChildren()) c.destroy({ children: true });
 		this.robbers = s.baddies.map((b) => {
 			const root = new Container();
 			root.position.set(wx(b.x), wy(b.y));
-			const body = drawRobber();
+			const body = new Sprite(this.frames['robber-idle']![0]);
+			body.anchor.set(0.5, FEET);
+			body.scale.set(ROBBER_SCALE);
 			const balloon = new Graphics()
 				.circle(0, 0, TUNING.baddie.balloonRadius * S)
 				.fill(colors.balloon)
@@ -314,11 +356,22 @@ export class WebSlingerView {
 	// ---- Per-frame sync ------------------------------------------------------------------------
 
 	sync(s: GameState) {
-		const key = `${s.levelIndex}:${s.level.name}:${s.coins.length}`;
-		if (key !== this.levelKey || this.coinSprites.length !== s.coins.length) {
+		const key = `${s.levelIndex}:${s.level.name}`;
+		if (key !== this.levelKey) {
 			this.levelKey = key;
 			this.buildLevel(s);
 		}
+		// Coins popped out of smashed crates.
+		while (this.coinSprites.length < s.coins.length) {
+			const c = s.coins[this.coinSprites.length]!;
+			const sp = new Sprite(this.coinTex);
+			sp.anchor.set(0.5);
+			sp.scale.set(0.42);
+			sp.position.set(wx(c.x), wy(c.y));
+			this.coinsLayer.addChild(sp);
+			this.coinSprites.push(sp);
+		}
+		s.crates.forEach((c, i) => (this.crateSprites[i]!.visible = !c.broken));
 		const h = s.hero;
 		this.camY += (cameraY(h.y, s.level.height) - this.camY) * 0.15;
 		const shake = this.shake > 0 && !this.reducedMotion() ? this.shake : 0;
@@ -380,10 +433,17 @@ export class WebSlingerView {
 	private syncRobber(b: Baddie, r: RobberSprite, heroX: number) {
 		// Face the hero while standing.
 		if (!b.down) {
-			r.body.scale.x = heroX < b.x ? 1 : -1;
-			r.balloon.visible = b.throwIn < 0.6;
+			// Sprites face right: flip to face the hero. Wind up to throw just before a balloon.
+			r.body.scale.x = (heroX < b.x ? -1 : 1) * ROBBER_SCALE;
+			const winding = b.throwIn < 0.6;
+			r.body.texture = winding
+				? this.frames['robber-throw']![0]!
+				: this.frames['robber-idle']![Math.floor(this.time * 5) % 4]!;
+			r.balloon.visible = winding;
+			r.balloon.x = heroX < b.x ? 14 : -14;
 			return;
 		}
+		r.body.texture = this.frames['robber-idle']![0]!;
 		r.balloon.visible = false;
 		if (!r.tipping) {
 			// Caught: topple, tumble off the ledge and land in a dizzy heap below. Nobody gets hurt.
@@ -416,88 +476,31 @@ export class WebSlingerView {
 
 	private drawHero(s: GameState) {
 		const h = s.hero;
-		const g = this.hero;
-		g.clear();
-		if (s.phase === 'over') return;
-		// Blink while safe after a hit.
-		if (h.safe > 0 && Math.floor(this.time * 12) % 2 === 0) return;
-
-		const x = wx(h.x);
-		const y = wy(h.y);
-		const u = S * 0.1; // limb thickness unit
-		// Which way is "up" for the body: on a wall your feet press against it, under a ledge
-		// you hang upside down, and in flight you stretch along the way you're going.
-		let lean = 0;
-		if (h.mode === 'cling') lean = (h.facing > 0 ? -1 : 1) * (Math.PI / 2);
-		else if (h.mode === 'hang') lean = Math.PI;
-		else if (h.mode === 'zip') lean = Math.atan2(h.vx, h.vy);
-		else if (h.mode === 'fall') lean = Math.sin(this.time * 9) * 0.5;
-		const c = Math.cos(lean);
-		const sn = Math.sin(lean);
-		// Local (right, up) offsets in metres → screen.
-		// Mirrored so the hero faces the way they're going (or away from the wall they cling to).
-		const f = h.facing;
-		const P = (dx: number, dy: number) => ({
-			x: x + (dx * f * c + dy * sn) * S,
-			y: y - (-dx * f * sn + dy * c) * S
-		});
-		const limb = (a: Pt, b: Pt, color: number) =>
-			g
-				.moveTo(a.x, a.y)
-				.lineTo(b.x, b.y)
-				.stroke({ color, width: u * 1.4, cap: 'round' });
-
-		const hip = P(0, -0.12);
-		const shoulder = P(0, 0.28);
-
-		// Legs.
-		if (h.mode === 'stand') {
-			limb(hip, P(0.16, -0.45), colors.suitDark);
-			limb(hip, P(-0.16, -0.45), colors.suit);
-		} else {
-			limb(hip, P(-0.22, -0.38), colors.suitDark);
-			limb(hip, P(-0.05, -0.44), colors.suit);
-		}
-		// Scarf streaming behind.
-		const wave = Math.sin(this.time * 10) * 0.05;
-		g.poly([
-			shoulder.x,
-			shoulder.y,
-			P(-0.55, 0.32 + wave).x,
-			P(-0.55, 0.32 + wave).y,
-			P(-0.5, 0.18 - wave).x,
-			P(-0.5, 0.18 - wave).y
-		]).fill(colors.scarf);
-		// Body.
-		g.moveTo(hip.x, hip.y)
-			.lineTo(shoulder.x, shoulder.y)
-			.stroke({ color: colors.suit, width: u * 3.2, cap: 'round' });
-		// Arms: reaching ahead while flying, gripping while stuck to something.
-		if (h.mode === 'zip') {
-			limb(shoulder, P(0.05, 0.75), colors.suit);
-			limb(shoulder, P(-0.3, 0.05), colors.suitDark);
-		} else if (h.mode === 'cling' || h.mode === 'hang') {
-			limb(shoulder, P(0.3, -0.25), colors.suit);
-			limb(shoulder, P(-0.3, -0.25), colors.suitDark);
+		const sp = this.heroSprite;
+		sp.visible = s.phase !== 'over' && !(h.safe > 0 && Math.floor(this.time * 12) % 2 === 0);
+		// Which way is "up" for the body: feet against a wall when clinging, upside down when
+		// hanging, stretched along the flight when zipping.
+		let up = 0; // radians, 0 = world up, positive = leaning right
+		let tex = this.frames['hero-idle']![Math.floor(this.time * 4) % 4]!;
+		if (h.mode === 'cling') {
+			up = h.facing > 0 ? Math.PI / 2 : -Math.PI / 2;
+			tex = this.frames['hero-jump']![0]!;
+		} else if (h.mode === 'hang') {
+			up = Math.PI;
+			tex = this.frames['hero-jump']![0]!;
+		} else if (h.mode === 'zip') {
+			up = Math.atan2(h.vx, h.vy);
+			tex = this.frames['hero-fly']![0]!;
 		} else if (h.mode === 'fall') {
-			limb(shoulder, P(0.35, 0.4), colors.suit);
-			limb(shoulder, P(-0.3, 0.4), colors.suitDark);
-		} else {
-			limb(shoulder, P(-0.15, -0.05), colors.suitDark);
-			limb(shoulder, P(0.15, -0.05), colors.suit);
+			up = Math.sin(this.time * 9) * 0.4;
+			tex = this.frames['hero-jump']![0]!;
 		}
-		// Head with a yellow goggle band.
-		const head = P(0, 0.55);
-		g.circle(head.x, head.y, 0.26 * S).fill(colors.suit);
-		const band = P(0.04, 0.58);
-		g.roundRect(band.x - 0.25 * S, band.y - 0.07 * S, 0.5 * S, 0.14 * S, 0.07 * S).fill(
-			colors.scarf
-		);
-		const eye = P(0.12, 0.58);
-		g.circle(eye.x, eye.y, 0.065 * S)
-			.fill(0xffffff)
-			.circle(eye.x + 2, eye.y, 0.03 * S)
-			.fill(palette.bgDeep);
+		sp.texture = tex;
+		// The sprite's centre is the body's middle, a little above the hero's centre along "up".
+		const off = HERO_BODY_OFFSET;
+		sp.position.set(wx(h.x + Math.sin(up) * off), wy(h.y + Math.cos(up) * off));
+		sp.rotation = up;
+		sp.scale.set(HERO_SCALE * (h.facing < 0 ? -1 : 1), HERO_SCALE);
 	}
 
 	/** Show (or clear) the line being drawn. */
@@ -582,6 +585,31 @@ export class WebSlingerView {
 		const at = { x: wx(b.x), y: wy(b.y + 1.2) };
 		this.burst(at, 14, 0xffffff, 320);
 		this.popup('Caught! +50', { x: at.x, y: at.y - 60 }, 40, palette.green);
+	}
+
+	smash(s: GameState, i: number) {
+		const c = s.crates[i]!;
+		const at = { x: wx(c.x), y: wy(c.y + TUNING.crate.size / 2) };
+		this.shake = Math.max(this.shake, 6);
+		for (let k = 0; k < 8 && this.particles.length < MAX_PARTICLES; k++) {
+			const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.4;
+			const v = 250 + Math.random() * 250;
+			const p = new Sprite(this.plankTex);
+			p.anchor.set(0.5);
+			p.position.set(at.x, at.y);
+			p.rotation = Math.random() * 3;
+			this.fx.addChild(p);
+			this.particles.push({
+				sprite: p,
+				vx: Math.cos(a) * v,
+				vy: Math.sin(a) * v,
+				gravity: 1400,
+				life: 0,
+				maxLife: 0.8,
+				size: 1
+			});
+		}
+		this.popup('+20', { x: at.x, y: at.y - 40 }, 34, palette.yellow);
 	}
 
 	splash(x: number, y: number) {
@@ -873,33 +901,17 @@ function drawHead(): Container {
 	return c;
 }
 
-/** A cartoon robber: beanie, eye mask, striped shirt. Drawn standing, feet at (0, 0). */
-function drawRobber(): Graphics {
+/** A wooden crate, drawn with its bottom-centre at (0, 0). */
+function drawCrate(): Graphics {
+	const z = TUNING.crate.size * S;
 	const g = new Graphics();
-	const h = TUNING.baddie.height * S;
-	const w = TUNING.baddie.width * S;
-	// Legs.
-	g.roundRect(-w * 0.32, -h * 0.42, w * 0.26, h * 0.42, 6).fill(colors.robberDark);
-	g.roundRect(w * 0.06, -h * 0.42, w * 0.26, h * 0.42, 6).fill(colors.robberDark);
-	// Striped shirt.
-	const top = -h * 0.78;
-	const shirt = h * 0.4;
-	g.roundRect(-w / 2, top, w, shirt, 14).fill(0xffffff);
-	const stripe = shirt / 7;
-	for (let k = 0; k < 3; k++) {
-		g.rect(-w / 2 + 2, top + stripe * (1 + 2 * k), w - 4, stripe).fill(colors.robberDark);
-	}
-	// Arms.
-	g.roundRect(-w / 2 - 8, top + 6, 10, h * 0.3, 5).fill(0xffffff);
-	g.roundRect(w / 2 - 2, top + 6, 10, h * 0.3, 5).fill(0xffffff);
-	// Head, beanie, mask.
-	const hy = -h * 0.88;
-	g.circle(0, hy, w * 0.34).fill(colors.skin);
-	g.roundRect(-w * 0.36, hy - w * 0.42, w * 0.72, w * 0.3, 10).fill(colors.robberDark);
-	g.circle(0, hy - w * 0.46, 6).fill(colors.robberDark);
-	g.roundRect(-w * 0.36, hy - 6, w * 0.72, 12, 6).fill(colors.robberDark);
-	g.circle(-w * 0.15, hy, 4).fill(0xffffff);
-	g.circle(w * 0.15, hy, 4).fill(0xffffff);
+	g.rect(-z / 2, -z, z, z)
+		.fill(0xc98a4b)
+		.stroke({ color: 0x8a5a2b, width: 5 });
+	g.moveTo(-z / 2 + 4, -z + 4)
+		.lineTo(z / 2 - 4, -4)
+		.stroke({ color: 0x8a5a2b, width: 6 });
+	g.rect(-z / 2, -z / 2 - 4, z, 8).fill(0x8a5a2b);
 	return g;
 }
 

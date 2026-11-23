@@ -8,7 +8,7 @@ import { createLoop } from '../../kit/loop';
 import { attachGestures } from '../../kit/input';
 import { loadSoundSet } from '../../kit/audio';
 import { palette } from '../../kit/theme';
-import { createPixiStage, type PixiStage } from '../../kit/pixi';
+import { Assets, createPixiStage, type PixiStage, type Spritesheet } from '../../kit/pixi';
 import {
 	isSavedRun,
 	launch,
@@ -25,6 +25,7 @@ import { H, inPause, W } from './render/layout';
 import { WebSlingerView } from './render/view';
 
 const SFX = asset('assets/web-slinger/sfx/index.json').replace(/\/index\.json$/, '');
+const SHEET = asset('assets/web-slinger/characters.json');
 /** Time to enjoy the stars before the next level starts. */
 const NEXT_LEVEL_DELAY = 2.6;
 /** Let the last moment play before the shell shows the game-over card. */
@@ -36,7 +37,19 @@ const webSlinger: GameDefinition = {
 	orientation: 'portrait',
 
 	async preload({ audio }, onProgress) {
-		await loadSoundSet(audio, SFX, onProgress);
+		let art = 0;
+		let sound = 0;
+		const report = () => onProgress(art * 0.6 + sound * 0.4);
+		await Promise.all([
+			Assets.load(SHEET, (p) => {
+				art = p;
+				report();
+			}),
+			loadSoundSet(audio, SFX, (p) => {
+				sound = p;
+				report();
+			})
+		]);
 	},
 
 	create(ctx): GameInstance {
@@ -74,6 +87,11 @@ const webSlinger: GameDefinition = {
 					break;
 				case 'shot':
 					a.play('web', { volume: 0.7, rate: 1.25 });
+					break;
+				case 'smash':
+					a.play('smash', { rate: 0.9 + Math.random() * 0.2 });
+					ctx.haptics.tap();
+					view?.smash(state, e.index);
 					break;
 				case 'webbed':
 				case 'bumped':
@@ -175,7 +193,11 @@ const webSlinger: GameDefinition = {
 				return;
 			}
 			stage = s;
-			const v = new WebSlingerView(s, () => ctx.settings.reducedMotion);
+			const v = new WebSlingerView(
+				s,
+				Assets.get<Spritesheet>(SHEET),
+				() => ctx.settings.reducedMotion
+			);
 			view = v;
 			v.sync(state);
 			v.update(0);
@@ -249,6 +271,7 @@ const webSlinger: GameDefinition = {
 				stage?.destroy();
 				stage = null;
 				view = null;
+				void Assets.unload(SHEET);
 			}
 		};
 	}

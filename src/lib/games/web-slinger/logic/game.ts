@@ -65,6 +65,12 @@ export interface Shot {
 	target: number;
 }
 
+export interface Crate {
+	x: number;
+	y: number;
+	broken: boolean;
+}
+
 export interface Coin {
 	x: number;
 	y: number;
@@ -78,6 +84,7 @@ export interface GameState {
 	baddies: Baddie[];
 	balloons: Balloon[];
 	shots: Shot[];
+	crates: Crate[];
 	coins: Coin[];
 	hearts: number;
 	score: number;
@@ -94,6 +101,7 @@ export type GameEvent =
 	| { type: 'release' }
 	| { type: 'land' }
 	| { type: 'coin'; index: number }
+	| { type: 'smash'; index: number }
 	| { type: 'shot' }
 	| { type: 'webbed'; index: number }
 	| { type: 'bumped'; index: number }
@@ -155,6 +163,7 @@ export function startLevel(
 		})),
 		balloons: [],
 		shots: [],
+		crates: level.crates.map((c) => ({ ...c, broken: false })),
 		coins: level.coins.map((c) => ({ ...c, taken: false })),
 		hearts,
 		score,
@@ -496,6 +505,28 @@ function stepProjectiles(s: GameState, dt: number, out: GameEvent[]) {
 	s.shots.length = j;
 }
 
+/** Flying through a crate smashes it; its coins pop out just above, ready to grab. */
+function smash(s: GameState, out: GameEvent[]) {
+	const h = s.hero;
+	const C = TUNING.crate;
+	const half = C.size / 2;
+	if (Math.hypot(h.vx, h.vy) < C.breakSpeed) return;
+	s.crates.forEach((c, i) => {
+		if (c.broken) return;
+		if (Math.abs(h.x - c.x) > half + R || h.y - R > c.y + C.size || h.y + R < c.y) return;
+		c.broken = true;
+		s.score += TUNING.scoring.crate;
+		for (let k = 0; k < C.coins; k++) {
+			s.coins.push({
+				x: c.x + (k - (C.coins - 1) / 2) * 0.7,
+				y: c.y + 1.2 + (k % 2) * 0.4,
+				taken: false
+			});
+		}
+		out.push({ type: 'smash', index: i });
+	});
+}
+
 function collect(s: GameState, out: GameEvent[]) {
 	const h = s.hero;
 	s.coins.forEach((c, i) => {
@@ -529,6 +560,7 @@ export function step(s: GameState, dt: number, out: GameEvent[] = []): GameEvent
 	stepBaddies(s, dt, out);
 	if (s.phase !== 'play') return out;
 	stepProjectiles(s, dt, out);
+	smash(s, out);
 	collect(s, out);
 	if (s.phase === 'play') checkFinish(s, out);
 	return out;

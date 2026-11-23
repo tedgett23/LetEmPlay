@@ -51,12 +51,14 @@ export const TUNING = {
 	},
 
 	ledge: { thickness: 0.8 },
+	/** Wooden crates: flying through faster than `breakSpeed` smashes one, and coins pop out. */
+	crate: { size: 0.9, breakSpeed: 6, coins: 3 },
 	/** Landing on spikes bounces you up like this (and costs a heart). */
 	spikeBounce: 9,
 
 	coin: { radius: 0.5 },
 
-	scoring: { coin: 10, baddie: 50, level: 100, perfect: 100 },
+	scoring: { coin: 10, crate: 20, baddie: 50, level: 100, perfect: 100 },
 
 	hearts: 3
 } as const;

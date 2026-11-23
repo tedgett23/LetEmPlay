@@ -24,6 +24,8 @@ export interface Level {
 	ledges: Ledge[];
 	/** Bad guys stand on a ledge top. */
 	baddies: Point[];
+	/** Wooden crates sit on ledge tops (x is the crate's centre); fly through to smash them. */
+	crates: Point[];
 	coins: Point[];
 	start: Point;
 	/** The flag on the top ledge; landing on that ledge finishes the level. */
@@ -39,6 +41,8 @@ type Side = 'L' | 'R' | 'M';
 interface LedgeOpts {
 	/** Bad guys, as distances from the ledge's wall end (left end for middle girders). */
 	baddies?: number[];
+	/** Crates, measured the same way. */
+	crates?: number[];
 	/** Spikes, as [from, to] distances along the ledge. */
 	spikes?: [number, number][];
 	coins?: number;
@@ -63,6 +67,7 @@ export function build(name: string, specs: LedgeSpec[], hint?: string): Level {
 		name,
 		ledges: [{ x0: 0, x1: W, top: 0, spikes: [] }],
 		baddies: [],
+		crates: [],
 		coins: [],
 		start: { x: W / 2, y: 0 },
 		finish: { x: 0, y: 0 },
@@ -86,6 +91,7 @@ export function build(name: string, specs: LedgeSpec[], hint?: string): Level {
 			})
 		});
 		for (const d of s.o.baddies ?? []) level.baddies.push({ x: at(d), y: s.top });
+		for (const d of s.o.crates ?? []) level.crates.push({ x: at(d), y: s.top });
 		const n = s.o.coins ?? 0;
 		for (let k = 0; k < n; k++)
 			level.coins.push({ x: x0 + ((k + 1) * s.w) / (n + 1), y: s.top + 1 });
@@ -109,13 +115,13 @@ export const LEVELS: Level[] = [
 		'Catch a robber',
 		[
 			ledge('R', 6, 6, { baddies: [2] }),
-			ledge('L', 12, 5, { coins: 2 }),
+			ledge('L', 12, 5, { crates: [1.5] }),
 			ledge('R', 18, 5, { finish: true })
 		],
 		'Fly into a robber, or tap one to web them!'
 	),
 	build('Zig zag', [
-		ledge('L', 6, 5, { coins: 2 }),
+		ledge('L', 6, 5, { crates: [1.5] }),
 		ledge('R', 12, 5, { baddies: [2] }),
 		ledge('L', 18, 5, { coins: 2 }),
 		ledge('M', 24, 4, { coins: 2 }),
@@ -126,7 +132,7 @@ export const LEVELS: Level[] = [
 		[
 			ledge('R', 6, 6, { spikes: [[3.5, 6]] }),
 			ledge('L', 12, 6, { baddies: [2], spikes: [[4, 6]] }),
-			ledge('R', 18, 5, { coins: 3 }),
+			ledge('R', 18, 5, { coins: 2, crates: [1.5] }),
 			ledge('L', 24, 5, { finish: true })
 		],
 		'Spikes sting! Aim for the clear end of a ledge.'
@@ -134,7 +140,7 @@ export const LEVELS: Level[] = [
 	build('Two robbers', [
 		ledge('L', 6, 5),
 		ledge('R', 12, 7, { baddies: [2, 5] }),
-		ledge('L', 18, 5, { coins: 2 }),
+		ledge('L', 18, 5, { crates: [1.5, 3] }),
 		ledge('R', 24, 6, { baddies: [3] }),
 		ledge('L', 30, 5, { finish: true })
 	]),
@@ -158,7 +164,7 @@ export const LEVELS: Level[] = [
 		ledge('L', 6, 6, { baddies: [3] }),
 		ledge('R', 12, 6, { baddies: [3] }),
 		ledge('L', 18, 6, { baddies: [3] }),
-		ledge('R', 24, 6, { coins: 3 }),
+		ledge('R', 24, 6, { crates: [1.5, 3, 4.5] }),
 		ledge('L', 30, 6, { baddies: [2, 4.5] }),
 		ledge('R', 36, 5, { finish: true })
 	]),
@@ -175,7 +181,7 @@ export const LEVELS: Level[] = [
 		ledge('R', 12, 6, { spikes: [[0, 2]], baddies: [4] }),
 		ledge('M', 18, 4, { coins: 2 }),
 		ledge('L', 24, 6, { baddies: [2, 5], spikes: [[3.2, 4]] }),
-		ledge('R', 30, 6, { coins: 3 }),
+		ledge('R', 30, 6, { crates: [1.5, 3] }),
 		ledge('M', 36, 4, { baddies: [2] }),
 		ledge('L', 42, 5, { finish: true })
 	])
